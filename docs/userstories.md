@@ -17,4 +17,3 @@ As a User, I want to be able to create an account so that I can track and monito
 As an Administrator of the application, I want to be able to create, edit and delete records in the database.
 
 As a Developer, I want to restrict some access and features of the site so that I can make sure that only the right people can access the site.
-
