@@ -16,3 +16,7 @@ It is a requirements that all listed companies
 ## Target Audience
 
 ## Tech Stack
+
+# A4 - Part A Deliverables:
+
+
