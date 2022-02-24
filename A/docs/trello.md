@@ -6,7 +6,7 @@
 
 Start with a blank board. 
 
-![Update 1](../A/imgs/trello/1.png)
+![Update 1](../imgs/trello/1.png)
 
 ### Update 2:
 
@@ -23,20 +23,20 @@ Add assignment requirements to the board:
 Start with writing user stories to define the requirements of the application. At the same time start drawing wireframes that incorporate the user stories - Make modifications as required. 
 
 
-![Update 2](../A/imgs/trello/2.png)
+![Update 2](../imgs/trello/2.png)
 
 ### Update 3:
 
 User stories and wireframes have been completed.
 Started to write the application architecture diagram to describe the technology stack that will be used to build the application.
 
-![Update 3](../A/imgs/trello/3.png)
+![Update 3](../imgs/trello/3.png)
 
 ### Update 4:
 
 The architecture diagram has been completed. Start to write the dataflow diagram to map how data utilised by the application will be used. 
 
-![Update 4](../A/imgs/trello/4.png)
+![Update 4](../imgs/trello/4.png)
 
 ### Update 5:
 
@@ -47,7 +47,7 @@ The requirements for Part - A of the assignment have been completed. Remaining c
 
 Will be completed as a part of Part B.
 
-![Update 5](../A/imgs/trello/5.png)
+![Update 5](../imgs/trello/5.png)
 
 ## Part B
 
@@ -64,4 +64,4 @@ Automate testing in the development and production environment
 - Use source control methodology (git)
 - Write well designed code.
 
-![Update 6](../A/imgs/trello/6.png)
+![Update 6](../imgs/trello/6.png)

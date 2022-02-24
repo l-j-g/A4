@@ -30,9 +30,9 @@ As a user of the application, I want to be able to view the homepage so that I c
 
 The homepage serves as the landing page for the application. It is the first page that the user sees when they open the application and explains the purpose of the application as well as describing features and statistics about the use of the application.
 
-<img src="../A/wireframes/Web_Home.png" alt="Query Wireframe - Web" width="600"/>
+<img src="../wireframes/Web_Home.png" alt="Query Wireframe - Web" width="600"/>
 
-<img src="../A/wireframes/Mob_Home.png" alt="Query Wireframe - Mobile" width="300"/>
+<img src="../wireframes/Mob_Home.png" alt="Query Wireframe - Mobile" width="300"/>
 
 - Acceptance Criteria:
 
@@ -63,9 +63,9 @@ Agile Update:
 Functionality to 'follow' companies by adding them to a users portfolio has been removed. This feature would add unnecessary complexity to the application that has already demonstrated in T3A2.
 
 
-<img src="../A/wireframes/Web_Query.png" alt="Query Wireframe - Web" width="600"/>
+<img src="../wireframes/Web_Query.png" alt="Query Wireframe - Web" width="600"/>
 
-<img src="../A/wireframes/Mob_Query.png" alt="Query Wireframe - Mobile" width="300"/>
+<img src="../wireframes/Mob_Query.png" alt="Query Wireframe - Mobile" width="300"/>
 
 ## Compare
 
@@ -89,9 +89,9 @@ Agile Update:
 
 Functionality to add or remove companies from the comparison has been added. Also multiple graphs may be required to compare the different aspects of the selected companies.
 
-<img src="../A/wireframes/Web_Compare.png" alt="Compare Wireframe - Web" width="600"/>
+<img src="../wireframes/Web_Compare.png" alt="Compare Wireframe - Web" width="600"/>
 
-<img src="../A/wireframes/Mob_Compare.png" alt="Compare Wireframe - Mobile" width="300"/>
+<img src="../wireframes/Mob_Compare.png" alt="Compare Wireframe - Mobile" width="300"/>
 
 ## Login
 
@@ -114,9 +114,9 @@ Agile Update:
 
 Functionality to login to the application has been removed. This feature would only allow users to add companies to their portfolio and would add unnessary complexity to the application that has already been demonstrated in T3A2.
 
-<img src="../A/wireframes/Web_Login.png" alt="Login Wireframe - Web" width="600"/>
+<img src="../wireframes/Web_Login.png" alt="Login Wireframe - Web" width="600"/>
 
-<img src="../A/wireframes/Mob_Login.png" alt="Login Wireframe - Mobile" width="300"/>
+<img src="../wireframes/Mob_Login.png" alt="Login Wireframe - Mobile" width="300"/>
 
 ## Profile
 
@@ -135,9 +135,9 @@ The user profile page will display personal information about the user and allow
 3. Allow users to view and remove companies from their portfolio.
 
 
-<img src="../A/wireframes/Web_Profile.png" alt="Profile Wireframe - Web" width="600"/>
+<img src="../wireframes/Web_Profile.png" alt="Profile Wireframe - Web" width="600"/>
 
-<img src="../A/wireframes/Mob_Profile.png" alt="Profile Wireframe - Mobile" width="300"/>
+<img src="../wireframes/Mob_Profile.png" alt="Profile Wireframe - Mobile" width="300"/>
 
 ## Admin Dashboard
 
@@ -158,6 +158,6 @@ The admin page allows the admin to add, update and delete companies that are inc
 - Agile Update:
 Front end admin dashboard functionality has been removed. Instead the admin will interface with the website using an API key and API platform such as postman to preform admin actions. 
 
-<img src="../A/wireframes/Web_Admin.png" alt="Admin Wireframe - Web" width="600"/>
+<img src="../wireframes/Web_Admin.png" alt="Admin Wireframe - Web" width="600"/>
 
-<img src="../A/wireframes/Mob_Admin.png" alt="Admin Wireframe - Mobile" width="300"/>
+<img src="../wireframes/Mob_Admin.png" alt="Admin Wireframe - Mobile" width="300"/>
