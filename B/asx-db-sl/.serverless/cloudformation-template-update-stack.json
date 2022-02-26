@@ -77,6 +77,12 @@
         "LogGroupName": "/aws/lambda/asx-db-sl-dev-api"
       }
     },
+    "InitLogGroup": {
+      "Type": "AWS::Logs::LogGroup",
+      "Properties": {
+        "LogGroupName": "/aws/lambda/asx-db-sl-dev-init"
+      }
+    },
     "IamRoleLambdaExecution": {
       "Type": "AWS::IAM::Role",
       "Properties": {
@@ -147,7 +153,7 @@
                   "Resource": [
                     {
                       "Fn::GetAtt": [
-                        "UsersTable",
+                        "TickersTable",
                         "Arn"
                       ]
                     }
@@ -180,7 +186,7 @@
           "S3Bucket": {
             "Ref": "ServerlessDeploymentBucket"
           },
-          "S3Key": "serverless/asx-db-sl/dev/1645696719897-2022-02-24T09:58:39.897Z/asx-db-sl.zip"
+          "S3Key": "serverless/asx-db-sl/dev/1645835233976-2022-02-26T00:27:13.976Z/asx-db-sl.zip"
         },
         "Handler": "wsgi_handler.handler",
         "Runtime": "python3.8",
@@ -189,7 +195,7 @@
         "Timeout": 6,
         "Environment": {
           "Variables": {
-            "USERS_TABLE": "users-table-dev"
+            "TICKERS_TABLE": "users-table-dev"
           }
         },
         "Role": {
@@ -203,14 +209,54 @@
         "ApiLogGroup"
       ]
     },
-    "ApiLambdaVersionWl8il9FqDxFxs8XXM9hvx73FIUKNuhNa8tbEbdh5Sw": {
+    "InitLambdaFunction": {
+      "Type": "AWS::Lambda::Function",
+      "Properties": {
+        "Code": {
+          "S3Bucket": {
+            "Ref": "ServerlessDeploymentBucket"
+          },
+          "S3Key": "serverless/asx-db-sl/dev/1645835233976-2022-02-26T00:27:13.976Z/asx-db-sl.zip"
+        },
+        "Handler": "handler.init",
+        "Runtime": "python3.8",
+        "FunctionName": "asx-db-sl-dev-init",
+        "MemorySize": 1024,
+        "Timeout": 6,
+        "Environment": {
+          "Variables": {
+            "TICKERS_TABLE": "users-table-dev"
+          }
+        },
+        "Role": {
+          "Fn::GetAtt": [
+            "IamRoleLambdaExecution",
+            "Arn"
+          ]
+        }
+      },
+      "DependsOn": [
+        "InitLogGroup"
+      ]
+    },
+    "ApiLambdaVersionqpzWINnY9Y28pNMZjoiDOoWO2DR4PNVRNu232HWn4": {
       "Type": "AWS::Lambda::Version",
       "DeletionPolicy": "Retain",
       "Properties": {
         "FunctionName": {
           "Ref": "ApiLambdaFunction"
         },
-        "CodeSha256": "Td4klpJ/xyeR/D2oddhZ4m4Pzp2nfKUP+faTcDLX3EI="
+        "CodeSha256": "a8rYKeFmXvCrcgT9CKrj01ccfFmCgOfiJU4iQ9ZiSgk="
+      }
+    },
+    "InitLambdaVersionwDTz8accLNehIcIPKHAsJPpJhpM1SkXwvGbOAMuXYg": {
+      "Type": "AWS::Lambda::Version",
+      "DeletionPolicy": "Retain",
+      "Properties": {
+        "FunctionName": {
+          "Ref": "InitLambdaFunction"
+        },
+        "CodeSha256": "a8rYKeFmXvCrcgT9CKrj01ccfFmCgOfiJU4iQ9ZiSgk="
       }
     },
     "ApiGatewayRestApi": {
@@ -235,6 +281,33 @@
           ]
         },
         "PathPart": "{proxy+}",
+        "RestApiId": {
+          "Ref": "ApiGatewayRestApi"
+        }
+      }
+    },
+    "ApiGatewayResourceDb": {
+      "Type": "AWS::ApiGateway::Resource",
+      "Properties": {
+        "ParentId": {
+          "Fn::GetAtt": [
+            "ApiGatewayRestApi",
+            "RootResourceId"
+          ]
+        },
+        "PathPart": "db",
+        "RestApiId": {
+          "Ref": "ApiGatewayRestApi"
+        }
+      }
+    },
+    "ApiGatewayResourceDbInit": {
+      "Type": "AWS::ApiGateway::Resource",
+      "Properties": {
+        "ParentId": {
+          "Ref": "ApiGatewayResourceDb"
+        },
+        "PathPart": "init",
         "RestApiId": {
           "Ref": "ApiGatewayRestApi"
         }
@@ -335,7 +408,53 @@
         "ApiLambdaPermissionApiGateway"
       ]
     },
-    "ApiGatewayDeployment1645696710035": {
+    "ApiGatewayMethodDbInitPut": {
+      "Type": "AWS::ApiGateway::Method",
+      "Properties": {
+        "HttpMethod": "PUT",
+        "RequestParameters": {},
+        "ResourceId": {
+          "Ref": "ApiGatewayResourceDbInit"
+        },
+        "RestApiId": {
+          "Ref": "ApiGatewayRestApi"
+        },
+        "ApiKeyRequired": false,
+        "AuthorizationType": "NONE",
+        "Integration": {
+          "IntegrationHttpMethod": "POST",
+          "Type": "AWS_PROXY",
+          "Uri": {
+            "Fn::Join": [
+              "",
+              [
+                "arn:",
+                {
+                  "Ref": "AWS::Partition"
+                },
+                ":apigateway:",
+                {
+                  "Ref": "AWS::Region"
+                },
+                ":lambda:path/2015-03-31/functions/",
+                {
+                  "Fn::GetAtt": [
+                    "InitLambdaFunction",
+                    "Arn"
+                  ]
+                },
+                "/invocations"
+              ]
+            ]
+          }
+        },
+        "MethodResponses": []
+      },
+      "DependsOn": [
+        "InitLambdaPermissionApiGateway"
+      ]
+    },
+    "ApiGatewayDeployment1645835226272": {
       "Type": "AWS::ApiGateway::Deployment",
       "Properties": {
         "RestApiId": {
@@ -345,7 +464,8 @@
       },
       "DependsOn": [
         "ApiGatewayMethodAny",
-        "ApiGatewayMethodProxyVarAny"
+        "ApiGatewayMethodProxyVarAny",
+        "ApiGatewayMethodDbInitPut"
       ]
     },
     "ApiLambdaPermissionApiGateway": {
@@ -385,18 +505,55 @@
         }
       }
     },
-    "UsersTable": {
+    "InitLambdaPermissionApiGateway": {
+      "Type": "AWS::Lambda::Permission",
+      "Properties": {
+        "FunctionName": {
+          "Fn::GetAtt": [
+            "InitLambdaFunction",
+            "Arn"
+          ]
+        },
+        "Action": "lambda:InvokeFunction",
+        "Principal": "apigateway.amazonaws.com",
+        "SourceArn": {
+          "Fn::Join": [
+            "",
+            [
+              "arn:",
+              {
+                "Ref": "AWS::Partition"
+              },
+              ":execute-api:",
+              {
+                "Ref": "AWS::Region"
+              },
+              ":",
+              {
+                "Ref": "AWS::AccountId"
+              },
+              ":",
+              {
+                "Ref": "ApiGatewayRestApi"
+              },
+              "/*/*"
+            ]
+          ]
+        }
+      }
+    },
+    "TickersTable": {
       "Type": "AWS::DynamoDB::Table",
       "Properties": {
         "AttributeDefinitions": [
           {
-            "AttributeName": "userId",
+            "AttributeName": "ticker_code",
             "AttributeType": "S"
           }
         ],
         "KeySchema": [
           {
-            "AttributeName": "userId",
+            "AttributeName": "ticker_code",
             "KeyType": "HASH"
           }
         ],
@@ -420,10 +577,19 @@
     "ApiLambdaFunctionQualifiedArn": {
       "Description": "Current Lambda function version",
       "Value": {
-        "Ref": "ApiLambdaVersionWl8il9FqDxFxs8XXM9hvx73FIUKNuhNa8tbEbdh5Sw"
+        "Ref": "ApiLambdaVersionqpzWINnY9Y28pNMZjoiDOoWO2DR4PNVRNu232HWn4"
       },
       "Export": {
         "Name": "sls-asx-db-sl-dev-ApiLambdaFunctionQualifiedArn"
+      }
+    },
+    "InitLambdaFunctionQualifiedArn": {
+      "Description": "Current Lambda function version",
+      "Value": {
+        "Ref": "InitLambdaVersionwDTz8accLNehIcIPKHAsJPpJhpM1SkXwvGbOAMuXYg"
+      },
+      "Export": {
+        "Name": "sls-asx-db-sl-dev-InitLambdaFunctionQualifiedArn"
       }
     },
     "ServiceEndpoint": {
