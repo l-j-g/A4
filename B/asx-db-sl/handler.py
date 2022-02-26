@@ -1,13 +1,14 @@
 import datetime
 import logging
 import csv
-import csv
 import boto3
 import os
+from flask import jsonify
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
 
+TICKERS_TABLE = os.environ['TICKERS_TABLE']
 
 def run(event, context):
     current_time = datetime.datetime.now().time()
@@ -24,15 +25,22 @@ def init(event, context):
             'dynamodb', region_name='localhost', endpoint_url='http://localhost:8000'
         )
 
-    TICKER_TABLE = os.environ['TICKER_TABLE']
       
-    with open('../*.csv', newline='') as csvfile:
-        tickers_list = csv.reader(csvfile, delimiter=',', quotechar='|')
+    with open('./ASX_Listed_Companies_24-02-2022_09-03-57_AEDT.csv', newline='') as csvfile:
+        tickers_list = csv.reader(csvfile, delimiter=',')
 
-        headers = next(ticker, None)
-        ticker_keys = [key for key in headers]
+        header = next(tickers_list, None)
+        #for ticker in tickers_list:
+        ticker = next(tickers_list, None) 
+        dynamodb_client.put_item(
+            TableName=TICKERS_TABLE, Item={
+            header[0]: {'S': ticker[0]},
+            header[1]: {'S': ticker[1]},
+            header[2]: {'S': ticker[2]},
+            header[3]: {'S': ticker[3]},
+            header[4]: {'S': ticker[4]}
+            }
+        )
+        logger.info("Added ticker: " + ticker[0])
 
-        for ticker in tickers_list:
-            dynamodb_client.put_item(
-                TableName=TICKER_TABLE, Key={'ticker': {'S': ticker}}
-            )
+    return(jsonify({"status": "init success"}))
