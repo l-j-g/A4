@@ -14,35 +14,35 @@ if os.environ.get('IS_OFFLINE'):
     )
 
 
-USERS_TABLE = os.environ['USERS_TABLE']
+TICKERS_TABLE = os.environ['TICKERS_TABLE']
 
 
-@app.route('/users/<string:user_id>')
+@app.route('/tickers/<string:ticker>')
 def get_user(user_id):
     result = dynamodb_client.get_item(
-        TableName=USERS_TABLE, Key={'userId': {'S': user_id}}
+        TableName=TICKERS_TABLE, Key={'ASX code': {'S': ticker}}
     )
     item = result.get('Item')
     if not item:
-        return jsonify({'error': 'Could not find user with provided "userId"'}), 404
+        return jsonify({'error': 'Could not find user with provided "ticker"'}), 404
 
     return jsonify(
-        {'userId': item.get('userId').get('S'), 'name': item.get('name').get('S')}
+        {'ticker': item.get('ASX code').get('S'), 'name': item.get('name').get('S')}
     )
 
 
-@app.route('/users', methods=['POST'])
+@app.route('/tickers', methods=['POST'])
 def create_user():
-    user_id = request.json.get('userId')
+    ticker = request.json.get('ASX code')
     name = request.json.get('name')
-    if not user_id or not name:
-        return jsonify({'error': 'Please provide both "userId" and "name"'}), 400
+    if not ticker or not name:
+        return jsonify({'error': 'Please provide both "ASX code" and "name"'}), 400
 
     dynamodb_client.put_item(
-        TableName=USERS_TABLE, Item={'userId': {'S': user_id}, 'name': {'S': name}}
+        TableName=TICKERS_TABLE, Item={'ASX code': {'S': ticker}, 'name': {'S': name}}
     )
 
-    return jsonify({'userId': user_id, 'name': name})
+    return jsonify({'ticker': ticker, 'name': name})
 
 
 @app.errorhandler(404)
