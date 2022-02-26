@@ -7,9 +7,11 @@ logger.setLevel(logging.INFO)
 
 
       
-with open('../*.csv', newline='') as csvfile:
-    tickers_list = csv.reader(csvfile, delimiter=',', quotechar='|')
+with open('./ASX_Listed_Companies_24-02-2022_09-03-57_AEDT.csv', newline='') as csvfile:
+    tickers_list = csv.reader(csvfile, delimiter=',')
 
-    headers = next(ticker, None)
-    ticker_keys = [key for key in headers]
-    print(ticker_keys)
+    headers = next(tickers_list, None)
+    print(headers[0])
+    line = next(tickers_list, None)
+    line = next(tickers_list, None)
+    print(line)
