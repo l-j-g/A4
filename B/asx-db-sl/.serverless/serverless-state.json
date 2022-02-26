@@ -35,7 +35,7 @@
         }
       },
       "environment": {
-        "TICKERS_TABLE": "users-table-dev"
+        "TICKERS_TABLE": "tickers-table-dev"
       },
       "versionFunctions": true,
       "compiledCloudFormationTemplate": {
@@ -210,7 +210,7 @@
                 "S3Bucket": {
                   "Ref": "ServerlessDeploymentBucket"
                 },
-                "S3Key": "serverless/asx-db-sl/dev/1645835233976-2022-02-26T00:27:13.976Z/asx-db-sl.zip"
+                "S3Key": "serverless/asx-db-sl/dev/1645870079486-2022-02-26T10:07:59.486Z/asx-db-sl.zip"
               },
               "Handler": "wsgi_handler.handler",
               "Runtime": "python3.8",
@@ -219,7 +219,7 @@
               "Timeout": 6,
               "Environment": {
                 "Variables": {
-                  "TICKERS_TABLE": "users-table-dev"
+                  "TICKERS_TABLE": "tickers-table-dev"
                 }
               },
               "Role": {
@@ -240,16 +240,16 @@
                 "S3Bucket": {
                   "Ref": "ServerlessDeploymentBucket"
                 },
-                "S3Key": "serverless/asx-db-sl/dev/1645835233976-2022-02-26T00:27:13.976Z/asx-db-sl.zip"
+                "S3Key": "serverless/asx-db-sl/dev/1645870079486-2022-02-26T10:07:59.486Z/asx-db-sl.zip"
               },
               "Handler": "handler.init",
               "Runtime": "python3.8",
               "FunctionName": "asx-db-sl-dev-init",
-              "MemorySize": 1024,
+              "MemorySize": 256,
               "Timeout": 6,
               "Environment": {
                 "Variables": {
-                  "TICKERS_TABLE": "users-table-dev"
+                  "TICKERS_TABLE": "tickers-table-dev"
                 }
               },
               "Role": {
@@ -263,24 +263,24 @@
               "InitLogGroup"
             ]
           },
-          "ApiLambdaVersionqpzWINnY9Y28pNMZjoiDOoWO2DR4PNVRNu232HWn4": {
+          "ApiLambdaVersionDK1FIh2qJJ9hG9TJDT0v99U8DwZolii3ggAS0TpAw": {
             "Type": "AWS::Lambda::Version",
             "DeletionPolicy": "Retain",
             "Properties": {
               "FunctionName": {
                 "Ref": "ApiLambdaFunction"
               },
-              "CodeSha256": "a8rYKeFmXvCrcgT9CKrj01ccfFmCgOfiJU4iQ9ZiSgk="
+              "CodeSha256": "ObmUYMWTWc0dgo/m0QgVtxD1ofdvIVxCzoTdFjWTLmA="
             }
           },
-          "InitLambdaVersionwDTz8accLNehIcIPKHAsJPpJhpM1SkXwvGbOAMuXYg": {
+          "InitLambdaVersion9lvNwJ11846st8xXvgOGJw9ty6CcAqkmygwjWgcdUs": {
             "Type": "AWS::Lambda::Version",
             "DeletionPolicy": "Retain",
             "Properties": {
               "FunctionName": {
                 "Ref": "InitLambdaFunction"
               },
-              "CodeSha256": "a8rYKeFmXvCrcgT9CKrj01ccfFmCgOfiJU4iQ9ZiSgk="
+              "CodeSha256": "ObmUYMWTWc0dgo/m0QgVtxD1ofdvIVxCzoTdFjWTLmA="
             }
           },
           "ApiGatewayRestApi": {
@@ -432,10 +432,10 @@
               "ApiLambdaPermissionApiGateway"
             ]
           },
-          "ApiGatewayMethodDbInitPut": {
+          "ApiGatewayMethodDbInitAny": {
             "Type": "AWS::ApiGateway::Method",
             "Properties": {
-              "HttpMethod": "PUT",
+              "HttpMethod": "ANY",
               "RequestParameters": {},
               "ResourceId": {
                 "Ref": "ApiGatewayResourceDbInit"
@@ -478,7 +478,7 @@
               "InitLambdaPermissionApiGateway"
             ]
           },
-          "ApiGatewayDeployment1645835226272": {
+          "ApiGatewayDeployment1645870072689": {
             "Type": "AWS::ApiGateway::Deployment",
             "Properties": {
               "RestApiId": {
@@ -489,7 +489,7 @@
             "DependsOn": [
               "ApiGatewayMethodAny",
               "ApiGatewayMethodProxyVarAny",
-              "ApiGatewayMethodDbInitPut"
+              "ApiGatewayMethodDbInitAny"
             ]
           },
           "ApiLambdaPermissionApiGateway": {
@@ -571,13 +571,13 @@
             "Properties": {
               "AttributeDefinitions": [
                 {
-                  "AttributeName": "ticker_code",
+                  "AttributeName": "ASX code",
                   "AttributeType": "S"
                 }
               ],
               "KeySchema": [
                 {
-                  "AttributeName": "ticker_code",
+                  "AttributeName": "ASX code",
                   "KeyType": "HASH"
                 }
               ],
@@ -585,7 +585,7 @@
                 "ReadCapacityUnits": 1,
                 "WriteCapacityUnits": 1
               },
-              "TableName": "users-table-dev"
+              "TableName": "tickers-table-dev"
             }
           }
         },
@@ -601,7 +601,7 @@
           "ApiLambdaFunctionQualifiedArn": {
             "Description": "Current Lambda function version",
             "Value": {
-              "Ref": "ApiLambdaVersionqpzWINnY9Y28pNMZjoiDOoWO2DR4PNVRNu232HWn4"
+              "Ref": "ApiLambdaVersionDK1FIh2qJJ9hG9TJDT0v99U8DwZolii3ggAS0TpAw"
             },
             "Export": {
               "Name": "sls-asx-db-sl-dev-ApiLambdaFunctionQualifiedArn"
@@ -610,7 +610,7 @@
           "InitLambdaFunctionQualifiedArn": {
             "Description": "Current Lambda function version",
             "Value": {
-              "Ref": "InitLambdaVersionwDTz8accLNehIcIPKHAsJPpJhpM1SkXwvGbOAMuXYg"
+              "Ref": "InitLambdaVersion9lvNwJ11846st8xXvgOGJw9ty6CcAqkmygwjWgcdUs"
             },
             "Export": {
               "Name": "sls-asx-db-sl-dev-InitLambdaFunctionQualifiedArn"
@@ -729,7 +729,7 @@
       "vpc": {}
     },
     "custom": {
-      "tableName": "users-table-dev",
+      "tableName": "tickers-table-dev",
       "wsgi": {
         "app": "app.app"
       }
@@ -764,7 +764,7 @@
         "timeout": 6,
         "runtime": "python3.8",
         "vpc": {},
-        "versionLogicalId": "ApiLambdaVersionqpzWINnY9Y28pNMZjoiDOoWO2DR4PNVRNu232HWn4"
+        "versionLogicalId": "ApiLambdaVersionDK1FIh2qJJ9hG9TJDT0v99U8DwZolii3ggAS0TpAw"
       },
       "init": {
         "handler": "handler.init",
@@ -772,18 +772,19 @@
           {
             "http": {
               "path": "db/init",
-              "method": "put",
+              "method": "any",
               "integration": "AWS_PROXY"
             }
           }
         ],
+        "memorySize": 256,
         "name": "asx-db-sl-dev-init",
         "package": {},
-        "memory": 1024,
+        "memory": 256,
         "timeout": 6,
         "runtime": "python3.8",
         "vpc": {},
-        "versionLogicalId": "InitLambdaVersionwDTz8accLNehIcIPKHAsJPpJhpM1SkXwvGbOAMuXYg"
+        "versionLogicalId": "InitLambdaVersion9lvNwJ11846st8xXvgOGJw9ty6CcAqkmygwjWgcdUs"
       }
     },
     "resources": {
@@ -793,13 +794,13 @@
           "Properties": {
             "AttributeDefinitions": [
               {
-                "AttributeName": "ticker_code",
+                "AttributeName": "ASX code",
                 "AttributeType": "S"
               }
             ],
             "KeySchema": [
               {
-                "AttributeName": "ticker_code",
+                "AttributeName": "ASX code",
                 "KeyType": "HASH"
               }
             ],
@@ -807,7 +808,7 @@
               "ReadCapacityUnits": 1,
               "WriteCapacityUnits": 1
             },
-            "TableName": "users-table-dev"
+            "TableName": "tickers-table-dev"
           }
         }
       },
@@ -839,7 +840,7 @@
     "artifact": "/home/lachlan/dev/python/A4/B/asx-db-sl/.serverless/asx-db-sl.zip"
   },
   "package": {
-    "artifactDirectoryName": "serverless/asx-db-sl/dev/1645835233976-2022-02-26T00:27:13.976Z",
+    "artifactDirectoryName": "serverless/asx-db-sl/dev/1645870079486-2022-02-26T10:07:59.486Z",
     "artifact": "asx-db-sl.zip"
   }
 }
