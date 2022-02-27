@@ -49,7 +49,9 @@ functions:
       - http: 
           path: /db/init
           method: ANY
-    memorySize: 256
+          async: true
+    timeout: 600
+    
 
           
   
