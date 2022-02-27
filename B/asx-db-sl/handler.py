@@ -30,17 +30,21 @@ def init(event, context):
         tickers_list = csv.reader(csvfile, delimiter=',')
 
         header = next(tickers_list, None)
-        #for ticker in tickers_list:
-        ticker = next(tickers_list, None) 
-        dynamodb_client.put_item(
-            TableName=TICKERS_TABLE, Item={
-            header[0]: {'S': ticker[0]},
-            header[1]: {'S': ticker[1]},
-            header[2]: {'S': ticker[2]},
-            header[3]: {'S': ticker[3]},
-            header[4]: {'S': ticker[4]}
-            }
-        )
-        logger.info("Added ticker: " + ticker[0])
+        for ticker in tickers_list:
+            ticker = next(tickers_list, None) 
+            dynamodb_client.put_item(
+                TableName=TICKERS_TABLE, Item={
+                header[0]: {'S': ticker[0]},
+                header[1]: {'S': ticker[1]},
+                header[2]: {'S': ticker[2]},
+                header[3]: {'S': ticker[3]},
+                header[4]: {'S': ticker[4]}
+                }
+            )
+            logger.info("Added ticker: " + ticker[0])
 
     return(jsonify({"status": "init success"}))
+
+    def add_ticker(event, context):
+        
+        dynamodb_client.

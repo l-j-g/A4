@@ -1,7 +1,9 @@
 import os
+from os import path
 
 import boto3
-from flask import Flask, jsonify, make_response, request
+from flask import Flask, jsonify, make_response, render_template, request
+from jinja2 import Environment, FileSystemLoader
 
 app = Flask(__name__)
 
@@ -15,6 +17,14 @@ if os.environ.get('IS_OFFLINE'):
 
 
 TICKERS_TABLE = os.environ['TICKERS_TABLE']
+env = Environment(loader=FileSystemLoader(path.join(path.dirname(__file__), 'templates'), encoding='utf8'))
+
+@app.route('/')
+def display_homepage():
+    data = {
+        'page_title': 'Homepage',
+    }
+    return render_template('home.html', page_data=data)
 
 
 @app.route('/tickers/<string:ticker>')
