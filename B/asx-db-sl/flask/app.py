@@ -2,7 +2,6 @@ import os
 
 import boto3
 from flask import Flask, jsonify, make_response, render_template, request
-from jinja2 import Environment, FileSystemLoader
 import yahoo_fin.stock_info as si
 import pandas as pd
 import csv 
