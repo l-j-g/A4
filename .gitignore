@@ -105,13 +105,16 @@ ENV/
 
 # node
 node_modules/
+*/node_modules/
 
 # serverless
 .serverless
 .serverless/
+*/.serverless/
 
 # dynamodb
 .dynamodb/
+*/.dynamodb/
 
 # IntelliJ
 .idea/
