@@ -114,7 +114,6 @@ def init():
 
         header = next(tickers_list, None)
         for ticker in tickers_list:
-            ticker = next(tickers_list, None) 
             dynamodb_client.put_item(
                 TableName=TICKERS_TABLE, Item={
                 header[0]: {'S': ticker[0]},
