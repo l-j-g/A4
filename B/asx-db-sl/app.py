@@ -105,7 +105,7 @@ def query(ticker):
         return jsonify({'error': 'Could not find any data with provided "ASX code"'}), 404
     return jsonify(item)
 
-@app.route('/init_db', methods=['POST'])
+@app.route('/init', methods=['POST'])
 # initialize the database with basic data from all companies listed on the asx
 def init():
 
@@ -114,7 +114,6 @@ def init():
 
         header = next(tickers_list, None)
         for ticker in tickers_list:
-            ticker = next(tickers_list, None) 
             dynamodb_client.put_item(
                 TableName=TICKERS_TABLE, Item={
                 header[0]: {'S': ticker[0]},
