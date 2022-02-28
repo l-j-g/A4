@@ -3,9 +3,15 @@ service: asx-db-sl
 frameworkVersion: '3'
 
 custom:
-  tableName: 'users-table-${self:provider.stage}'
+  tableName: 'tickers-table-${self:provider.stage}'
   wsgi:
     app: app.app
+
+  dynamodb:
+    start:
+      migrate: true
+    stages:
+      - dev
 
 provider:
   name: aws
@@ -23,9 +29,9 @@ provider:
             - dynamodb:UpdateItem
             - dynamodb:DeleteItem
           Resource:
-            - Fn::GetAtt: [ UsersTable, Arn ]
+            - Fn::GetAtt: [ TickersTable, Arn ]
   environment:
-    USERS_TABLE: ${self:custom.tableName}
+    TICKERS_TABLE: ${self:custom.tableName}
 
 functions:
   api:
@@ -44,14 +50,14 @@ plugins:
 
 resources:
   Resources:
-    UsersTable:
+    TickersTable:
       Type: AWS::DynamoDB::Table
       Properties:
         AttributeDefinitions:
-          - AttributeName: userId
+          - AttributeName: ASX code
             AttributeType: S
         KeySchema:
-          - AttributeName: userId
+          - AttributeName: ASX code
             KeyType: HASH
         ProvisionedThroughput:
           ReadCapacityUnits: 1
