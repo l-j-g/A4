@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+{% block content %}
+<h2> {{ page_data.page_title }}: {{ page_data.error_type}} </h2>
+<p> Your account could not be registered because: </p>
+<ul> 
+    {% for error in page_data.error_message %}
+    <li> {{ error.capitalize() }}: </li>
+        <ul>
+            {% for error_context in page_data.error_message[error] %}
+            <li> {{ error_context }} </li>
+            {% endfor %}
+        </ul>
+
+    {% endfor %}
+</ul>
+
+<hr/>
+{% endblock %}
