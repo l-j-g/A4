@@ -14,36 +14,78 @@ if os.environ.get('IS_OFFLINE'):
     )
 
 
-USERS_TABLE = os.environ['USERS_TABLE']
+TICKERS_TABLE = os.environ['USERS_TABLE']
 
+@app.route('/')
+def display_homepage():
+    data = {
+        'page_title': 'Homepage',
+    }
+    return render_template('home.html', page_data=data)
 
-@app.route('/users/<string:user_id>')
-def get_user(user_id):
-    result = dynamodb_client.get_item(
-        TableName=USERS_TABLE, Key={'userId': {'S': user_id}}
-    )
-    item = result.get('Item')
-    if not item:
-        return jsonify({'error': 'Could not find user with provided "userId"'}), 404
+@app.route('/add_ticker/<string:ticker>', methods=['POST'])
+def add_ticker(ticker):
+    ticker = ticker + '.AX'
 
-    return jsonify(
-        {'userId': item.get('userId').get('S'), 'name': item.get('name').get('S')}
-    )
+    info = pd.DataFrame.to_json(si.get_company_info(ticker))
+    balance_sheet = pd.DataFrame.to_json(si.get_balance_sheet(ticker, False))
+    cash_flow = pd.DataFrame.to_json(si.get_cash_flow(ticker, False))
+    income_statement = pd.DataFrame.to_json(si.get_income_statement(ticker, False))
 
-
-@app.route('/users', methods=['POST'])
-def create_user():
-    user_id = request.json.get('userId')
-    name = request.json.get('name')
-    if not user_id or not name:
-        return jsonify({'error': 'Please provide both "userId" and "name"'}), 400
 
     dynamodb_client.put_item(
-        TableName=USERS_TABLE, Item={'userId': {'S': user_id}, 'name': {'S': name}}
+        TableName=TICKERS_TABLE, Item={
+            'ASX code': {'S': ticker},
+            'Info' : {'M': info},
+            'Income Statement': {'M': income_statement},
+            'Cash Flow': {'M': cash_flow},
+            'Balance Sheet': {'M': balance_sheet}
+        }
     )
 
-    return jsonify({'userId': user_id, 'name': name})
+@app.route('/query/<string:ticker>', methods=['POST'])
+def query(ticker):
+    ticker = ticker + '.AX'
 
+    info = pd.DataFrame.to_json(si.get_company_info(ticker))
+    balance_sheet = pd.DataFrame.to_json(si.get_balance_sheet(ticker, False))
+    cash_flow = pd.DataFrame.to_json(si.get_cash_flow(ticker, False))
+    income_statement = pd.DataFrame.to_json(si.get_income_statement(ticker, False))
+
+
+    response = dynamodb_client.get_item(
+        TableName=TICKERS_TABLE, Key={
+            'ASX code': {'S': ticker},
+        }
+    )
+
+    item = response.get('Item')
+
+    if not item:
+        return jsonify({'error': 'Could not find any data with provided "ASX code"'}), 404
+    return jsonify(item)
+
+@app.route('/init', methods=['POST'])
+# initialize the database with basic data from all companies listed on the asx
+def init():
+
+    with open('./ASX_Listed_Companies_24-02-2022_09-03-57_AEDT.csv', newline='') as csvfile:
+        tickers_list = csv.reader(csvfile, delimiter=',')
+
+        header = next(tickers_list, None)
+        for ticker in tickers_list:
+            dynamodb_client.put_item(
+                TableName=TICKERS_TABLE, Item={
+                header[0]: {'S': ticker[0]},
+                header[1]: {'S': ticker[1]},
+                header[2]: {'S': ticker[2]},
+                header[3]: {'S': ticker[3]},
+                header[4]: {'S': ticker[4]}
+                }
+            )
+            logger.info("Added ticker: " + ticker[0])
+
+    return(jsonify({"status": "init success"}))
 
 @app.errorhandler(404)
 def resource_not_found(e):
