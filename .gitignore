@@ -118,3 +118,5 @@ node_modules/
 
 # IntelliJ
 .idea/
+
+*.zip

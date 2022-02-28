@@ -105,7 +105,7 @@ def query(ticker):
         return jsonify({'error': 'Could not find any data with provided "ASX code"'}), 404
     return jsonify(item)
 
-@app.route('/init_db', methods=['POST'])
+@app.route('/init', methods=['POST'])
 # initialize the database with basic data from all companies listed on the asx
 def init():
 
