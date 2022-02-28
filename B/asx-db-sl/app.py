@@ -7,6 +7,10 @@ from jinja2 import Environment, FileSystemLoader
 import yahoo_fin.stock_info as si
 import pandas as pd
 import csv
+import logging
+
+logger = logging.getLogger(__name__)
+logger.setLevel(logging.INFO)
 
 app = Flask(__name__)
 
@@ -124,8 +128,6 @@ def init():
 
     return(jsonify({"status": "init success"}))
     
-
-
 
 @app.errorhandler(404)
 def resource_not_found(e):
