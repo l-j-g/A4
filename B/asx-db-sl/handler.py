@@ -44,7 +44,21 @@ def init(event, context):
             logger.info("Added ticker: " + ticker[0])
 
     return(jsonify({"status": "init success"}))
+'''
+def add_ticker(event, context):
+    import yahoo_fin.stock_info as si
+    import pandas as pd
 
-    def add_ticker(event, context):
-        
-        dynamodb_client.
+    dynamodb_client = boto3.client('dynamodb')
+    info = si.get_company_info(event['ticker'])
+    balance_sheets = si.get_balance_sheet(event['ticker'], False)
+    cash_flow = si.get_cash_flow(event['ticker'], False)
+    income_statement = si.get_income_statement(event['ticker'], False)
+
+
+    dynamodb_client.put_item(
+        TableName=TICKERS_TABLE, Item={
+            'ASX code': {'S': event['ASX code']},
+            'Income Statement': {'M': incomes}
+'''
+            

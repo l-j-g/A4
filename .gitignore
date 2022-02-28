@@ -109,5 +109,8 @@ node_modules
 # serverless
 .serverless
 
+# dynamodb
+.dynamodb/
+
 # IntelliJ
 .idea/

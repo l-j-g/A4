@@ -6,15 +6,22 @@ frameworkVersion: '3'
 plugins:
   - serverless-wsgi
   - serverless-python-requirements
-
+  - serverless-dynamodb-local
 custom:
   tableName: 'tickers-table-${self:provider.stage}'
   wsgi:
     app: app.app
+  pythonRequirements:
+    dockerizePip: non-linux
+  dynamodb:
+    start:
+      migrate: true
+    stages:
+      - dev
 
 provider:
   name: aws
-  runtime: python3.8
+  runtime: python3.9
   stage: dev
   region: ap-southeast-2
   iam:
