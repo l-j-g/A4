@@ -12,6 +12,10 @@ custom:
       migrate: true
     stages:
       - dev
+  
+  pythonRequirements:
+    dockerizePip: non-linux
+    layer: true
 
 provider:
   name: aws
@@ -43,6 +47,8 @@ functions:
       - http:
           path: /{proxy+}
           method: ANY
+    layers:
+      - Ref: PythonRequirementsLambdaLayer
 
 plugins:
   - serverless-wsgi
