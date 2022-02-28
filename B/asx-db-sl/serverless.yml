@@ -5,21 +5,19 @@ frameworkVersion: '3'
 custom:
   tableName: 'tickers-table-${self:provider.stage}'
   wsgi:
-    app: app.app
-
+    app: flask/app.app
   dynamodb:
     start:
       migrate: true
     stages:
       - dev
-  
   pythonRequirements:
     dockerizePip: non-linux
     layer: true
 
 provider:
   name: aws
-  runtime: python3.9
+  runtime: python3.8
   stage: dev
   region: ap-southeast-2
   iam:
@@ -38,9 +36,15 @@ provider:
   environment:
     TICKERS_TABLE: ${self:custom.tableName}
 
+package:
+  individually: true
+  exclude:
+    - '**/*'
 functions:
   api:
     handler: wsgi_handler.handler
+    layers:
+      - {Ref: PythonRequirementsLambdaLayer}
     events:
       - http:
           path: /
@@ -48,8 +52,6 @@ functions:
       - http:
           path: /{proxy+}
           method: ANY
-    layers:
-      - Ref: PythonRequirementsLambdaLayer
 
 plugins:
   - serverless-wsgi
