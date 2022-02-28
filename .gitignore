@@ -104,10 +104,11 @@ ENV/
 .*.sw*
 
 # node
-node_modules
+node_modules/
 
 # serverless
 .serverless
+.serverless/
 
 # dynamodb
 .dynamodb/
