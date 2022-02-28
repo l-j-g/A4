@@ -14,7 +14,7 @@ if os.environ.get('IS_OFFLINE'):
     )
 
 
-TICKERS_TABLE = os.environ['USERS_TABLE']
+TICKERS_TABLE = os.environ['TICKERS_TABLE']
 
 @app.route('/')
 def display_homepage():
