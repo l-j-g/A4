@@ -6,7 +6,11 @@ frameworkVersion: '3'
 plugins:
   - serverless-wsgi
   - serverless-python-requirements
+<<<<<<< HEAD
   - serverless-dynamodb-local
+=======
+
+>>>>>>> f9592b507db898923ab5e189c4c19798a3c48c3f
 custom:
   tableName: 'tickers-table-${self:provider.stage}'
   wsgi:
