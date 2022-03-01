@@ -87,7 +87,6 @@ def init():
                 header[4]: {'S': ticker[4]}
                 }
             )
-            logger.info("Added ticker: " + ticker[0])
 
     return(jsonify({"status": "init success"}))
 

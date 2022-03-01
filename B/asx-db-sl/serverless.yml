@@ -35,11 +35,9 @@ provider:
             - Fn::GetAtt: [ TickersTable, Arn ]
   environment:
     TICKERS_TABLE: ${self:custom.tableName}
-
 package:
-  individually: true
-  exclude:
-    - '**/*'
+  patterns:
+    - '!.dynamodb/**'
 functions:
   api:
     handler: wsgi_handler.handler
@@ -56,7 +54,7 @@ functions:
 plugins:
   - serverless-wsgi
   - serverless-python-requirements
-
+  - serverless-dynamodb-local
 resources:
   Resources:
     TickersTable:

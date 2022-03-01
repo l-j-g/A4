@@ -1,23 +1,25 @@
 import os
-
 import boto3
 from flask import Flask, jsonify, make_response, render_template, request
 import yahoo_fin.stock_info as si
+import yfinance as yf
 import pandas as pd
 import csv 
+import pdb
 
 app = Flask(__name__)
 
 
 dynamodb_client = boto3.client('dynamodb')
+dynamodb = boto3.resource('dynamodb')
 
 if os.environ.get('IS_OFFLINE'):
-    dynamodb_client = boto3.client(
-        'dynamodb', region_name='localhost', endpoint_url='http://localhost:8000'
-    )
+    dynamodb_client = boto3.client('dynamodb', region_name='localhost', endpoint_url='http://localhost:8000')
+    dynamodb = boto3.resource('dynamodb', region_name='localhost', endpoint_url='http://localhost:8000')
 
 
 TICKERS_TABLE = os.environ['TICKERS_TABLE']
+table = dynamodb.Table(os.environ['TICKERS_TABLE'])
 
 @app.route('/')
 def display_homepage():
@@ -26,42 +28,37 @@ def display_homepage():
     }
     return render_template('home.html', page_data=data)
 
-@app.route('/add_ticker/<string:ticker>', methods=['POST'])
-def add_ticker(ticker):
+@app.route('/add/<string:ticker>', methods=['POST'])
+def add(ticker):
     ticker = ticker + '.AX'
 
-    info = pd.DataFrame.to_json(si.get_company_info(ticker))
-    balance_sheet = pd.DataFrame.to_json(si.get_balance_sheet(ticker, False))
-    cash_flow = pd.DataFrame.to_json(si.get_cash_flow(ticker, False))
-    income_statement = pd.DataFrame.to_json(si.get_income_statement(ticker, False))
-
-
+    values = yf.Ticker(ticker)
+    info = values.info
+    balance_sheet = values.balance_sheet
+    cash_flow = values.cashflow
+    income_statement = values.earnings
+    ticker = ticker[:-3] 
+    print(ticker)
     dynamodb_client.put_item(
         TableName=TICKERS_TABLE, Item={
-            'ASX code': {'S': ticker},
-            'Info' : {'M': info},
-            'Income Statement': {'M': income_statement},
-            'Cash Flow': {'M': cash_flow},
-            'Balance Sheet': {'M': balance_sheet}
+            'ASX code': ticker,
+            'Info': info,
+            'Income Statement': income_statement,
+            'Cash Flow': cash_flow,
+            'Balance Sheet': balance_sheet
         }
     )
 
+    return("hello")
+
 @app.route('/query/<string:ticker>', methods=['POST'])
 def query(ticker):
-    ticker = ticker + '.AX'
-
-    info = pd.DataFrame.to_json(si.get_company_info(ticker))
-    balance_sheet = pd.DataFrame.to_json(si.get_balance_sheet(ticker, False))
-    cash_flow = pd.DataFrame.to_json(si.get_cash_flow(ticker, False))
-    income_statement = pd.DataFrame.to_json(si.get_income_statement(ticker, False))
-
 
     response = dynamodb_client.get_item(
         TableName=TICKERS_TABLE, Key={
             'ASX code': {'S': ticker},
         }
     )
-
     item = response.get('Item')
 
     if not item:
@@ -77,16 +74,16 @@ def init():
 
         header = next(tickers_list, None)
         for ticker in tickers_list:
-            dynamodb_client.put_item(
-                TableName=TICKERS_TABLE, Item={
-                header[0]: {'S': ticker[0]},
-                header[1]: {'S': ticker[1]},
-                header[2]: {'S': ticker[2]},
-                header[3]: {'S': ticker[3]},
-                header[4]: {'S': ticker[4]}
+            response = table.put_item(
+                Item={
+                header[0]: ticker[0],
+                header[1]: ticker[1],
+                header[2]: ticker[2],
+                header[3]: ticker[3],
+                header[4]: ticker[4]
                 }
             )
-            logger.info("Added ticker: " + ticker[0])
+            print(f"added {ticker[0]} to the database")
 
     return(jsonify({"status": "init success"}))
 
