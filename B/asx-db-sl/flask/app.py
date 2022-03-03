@@ -5,7 +5,8 @@ import yahoo_fin.stock_info as si
 import yfinance as yf
 import pandas as pd
 import csv 
-import pdb
+import json
+from decimal import Decimal
 
 app = Flask(__name__)
 
@@ -19,6 +20,7 @@ if os.environ.get('IS_OFFLINE'):
 
 
 TICKERS_TABLE = os.environ['TICKERS_TABLE']
+print(TICKERS_TABLE)
 table = dynamodb.Table(os.environ['TICKERS_TABLE'])
 
 @app.route('/')
@@ -28,28 +30,44 @@ def display_homepage():
     }
     return render_template('home.html', page_data=data)
 
-@app.route('/add/<string:ticker>', methods=['POST'])
+@app.route('/update/<string:ticker>', methods=['POST'])
 def add(ticker):
+
     ticker = ticker + '.AX'
+    key = {'ASX code': ticker[:-3]}
 
-    values = yf.Ticker(ticker)
-    info = values.info
-    balance_sheet = values.balance_sheet
-    cash_flow = values.cashflow
-    income_statement = values.earnings
+    info = pd.DataFrame.to_dict(si.get_company_info(ticker))
+    info = info['Value']
+
+    cash_flow = si.get_cash_flow(ticker)
+    cash_flow.columns  = cash_flow.columns.astype(str)
+    cash_flow = pd.DataFrame.to_dict(cash_flow)
+
+    income_statement = si.get_income_statement(ticker)
+    income_statement.columns = income_statement.columns.astype(str)
+    income_statement = pd.DataFrame.to_dict(income_statement)
+
+    balance_sheet = si.get_balance_sheet(ticker)
+    balance_sheet.columns = balance_sheet.columns.astype(str)
+    balance_sheet = balance_sheet.fillna(0)
+    balance_sheet = balance_sheet.astype('Int64')
+    balance_sheet = pd.DataFrame.to_dict(balance_sheet)
+
+
     ticker = ticker[:-3] 
-    print(ticker)
-    dynamodb_client.put_item(
-        TableName=TICKERS_TABLE, Item={
-            'ASX code': ticker,
-            'Info': info,
-            'Income Statement': income_statement,
-            'Cash Flow': cash_flow,
-            'Balance Sheet': balance_sheet
-        }
+   
+    response = table.update_item(
+        Key = key,
+        UpdateExpression = 'set Info = :i, CashFlow = :c, IncomeStatement = :in, BalanceSheet = :bs',
+        ExpressionAttributeValues = {
+            ':i': info,
+            ':c': cash_flow,
+            ':in': income_statement,
+            ':bs': balance_sheet,
+        }   
     )
-
-    return("hello")
+   
+    return("OK")
 
 @app.route('/query/<string:ticker>', methods=['POST'])
 def query(ticker):
@@ -90,3 +108,7 @@ def init():
 @app.errorhandler(404)
 def resource_not_found(e):
     return make_response(jsonify(error='Not found!'), 404)
+
+#################
+# H E L P E R S #
+#################
