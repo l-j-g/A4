@@ -14,6 +14,16 @@ custom:
   pythonRequirements:
     dockerizePip: non-linux
     layer: true
+  capacities:
+  - table: TickersTable # Dynamodb Resource
+  read:
+    minimum: 1    # Minimum read capacity
+    maximum: 100  # Maximum read capacity
+    usage: 0.75   # Target usage percentage
+  write:
+    minimum: 1    # Minimum write capacity
+    maximum: 100  # Maximum write capacity
+    usage: 0.75   # Target usage percentage
 
 provider:
   name: aws
@@ -55,6 +65,7 @@ plugins:
   - serverless-wsgi
   - serverless-python-requirements
   - serverless-dynamodb-local
+  - serverless-dynamodb-autoscaling
 resources:
   Resources:
     TickersTable:

@@ -9,6 +9,7 @@
     "serverless-wsgi": "^1.7.6"
   },
   "dependencies": {
+    "serverless-dynamodb-autoscaling": "^0.6.2",
     "serverless-python-individually": "^0.1.9"
   }
 }
