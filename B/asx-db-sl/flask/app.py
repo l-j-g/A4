@@ -33,29 +33,15 @@ def display_homepage():
 @app.route('/update/<string:ticker>', methods=['POST'])
 def add(ticker):
 
+    key = {'ASX code': ticker}
     ticker = ticker + '.AX'
-    key = {'ASX code': ticker[:-3]}
-
     info = pd.DataFrame.to_dict(si.get_company_info(ticker))
     info = info['Value']
 
-    cash_flow = si.get_cash_flow(ticker)
-    cash_flow.columns  = cash_flow.columns.astype(str)
-    cash_flow = pd.DataFrame.to_dict(cash_flow)
+    cash_flow = clean(si.get_cash_flow(ticker))
+    income_statement = clean(si.get_income_statement(ticker))
+    balance_sheet = clean(si.get_balance_sheet(ticker))
 
-    income_statement = si.get_income_statement(ticker)
-    income_statement.columns = income_statement.columns.astype(str)
-    income_statement = pd.DataFrame.to_dict(income_statement)
-
-    balance_sheet = si.get_balance_sheet(ticker)
-    balance_sheet.columns = balance_sheet.columns.astype(str)
-    balance_sheet = balance_sheet.fillna(0)
-    balance_sheet = balance_sheet.astype('Int64')
-    balance_sheet = pd.DataFrame.to_dict(balance_sheet)
-    (cash_flow, income_statement, balance_sheet) = clean((cash_flow, income_statement, balance_sheet))
-
-    ticker = ticker[:-3] 
-   
     response = table.update_item(
         Key = key,
         UpdateExpression = 'set Info = :i, CashFlow = :c, IncomeStatement = :in, BalanceSheet = :bs',
@@ -114,7 +100,12 @@ def resource_not_found(e):
 #################
 
 def clean(data):
-   return(data)
+    data.columns = data.columns.astype(str)
+    data = data.fillna(0)
+    data = data.astype('float')
+    data = data.astype('Int64')
+    data = pd.DataFrame.to_dict(data)
+    return(data)
     
 
 
