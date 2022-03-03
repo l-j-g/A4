@@ -7,6 +7,8 @@ import pandas as pd
 import csv 
 import json
 from decimal import Decimal
+import datetime
+from datetime import datetime
 
 app = Flask(__name__)
 
@@ -84,7 +86,8 @@ def init():
                 header[1]: ticker[1],
                 header[2]: ticker[2],
                 header[3]: ticker[3],
-                header[4]: ticker[4]
+                header[4]: ticker[4],
+                'LastUpdated': datetime.utcnow().isoformat(),
                 }
             )
             print(f"added {ticker[0]} to the database")
