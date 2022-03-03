@@ -52,7 +52,7 @@ def add(ticker):
     balance_sheet = balance_sheet.fillna(0)
     balance_sheet = balance_sheet.astype('Int64')
     balance_sheet = pd.DataFrame.to_dict(balance_sheet)
-
+    (cash_flow, income_statement, balance_sheet) = clean((cash_flow, income_statement, balance_sheet))
 
     ticker = ticker[:-3] 
    
@@ -66,8 +66,8 @@ def add(ticker):
             ':bs': balance_sheet,
         }   
     )
-   
     return("OK")
+        
 
 @app.route('/query/<string:ticker>', methods=['POST'])
 def query(ticker):
@@ -112,3 +112,10 @@ def resource_not_found(e):
 #################
 # H E L P E R S #
 #################
+
+def clean(data):
+   return(data)
+    
+
+
+    
