@@ -60,6 +60,12 @@ functions:
       - http:
           path: /{proxy+}
           method: ANY
+  auto_update:
+    handler: dev/dev.autoUpdate
+    layers:
+    - {Ref: PythonRequirementsLambdaLayer}
+    events:
+      - schedule: cron(0/2 * ? * MON-FRI *)
 
 plugins:
   - serverless-wsgi
