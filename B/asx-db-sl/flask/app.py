@@ -22,7 +22,6 @@ if os.environ.get('IS_OFFLINE'):
 
 
 TICKERS_TABLE = os.environ['TICKERS_TABLE']
-print(TICKERS_TABLE)
 table = dynamodb.Table(os.environ['TICKERS_TABLE'])
 
 @app.route('/')
