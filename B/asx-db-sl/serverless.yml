@@ -2,6 +2,11 @@ service: asx-db-sl
 
 frameworkVersion: '3'
 
+plugins:
+  - serverless-wsgi
+  - serverless-python-requirements
+  - serverless-dynamodb-local
+  - serverless-dynamodb-autoscaling
 custom:
   tableName: 'tickers-table-${self:provider.stage}'
   wsgi:
@@ -15,16 +20,15 @@ custom:
     dockerizePip: non-linux
     layer: true
   capacities:
-  - table: TickersTable # Dynamodb Resource
-  read:
-    minimum: 1    # Minimum read capacity
-    maximum: 100  # Maximum read capacity
-    usage: 0.75   # Target usage percentage
-  write:
-    minimum: 1    # Minimum write capacity
-    maximum: 100  # Maximum write capacity
-    usage: 0.75   # Target usage percentage
-
+    - table: TickersTable # Dynamodb Resource
+      read:
+        minimum: 1    # Minimum read capacity
+        maximum: 100  # Maximum read capacity
+        usage: 0.75   # Target usage percentage
+      write:
+        minimum: 15    # Minimum write capacity
+        maximum: 100  # Maximum write capacity
+        usage: 0.75   # Target usage percentage
 provider:
   name: aws
   runtime: python3.8
@@ -65,25 +69,48 @@ functions:
     layers:
     - {Ref: PythonRequirementsLambdaLayer}
     events:
-      - schedule: cron(0/2 * ? * MON-FRI *)
+      - schedule: cron(0/2 * ? * * *)
+  init:
+    handler: dev/dev.init
+    layers:
+      - {Ref: PythonRequirementsLambdaLayer}
+    events:
+      - http:
+          path: api/init/
+          method: POST
+          async: true
+    timeout: 600
 
-plugins:
-  - serverless-wsgi
-  - serverless-python-requirements
-  - serverless-dynamodb-local
-  - serverless-dynamodb-autoscaling
+
 resources:
   Resources:
     TickersTable:
       Type: AWS::DynamoDB::Table
       Properties:
         AttributeDefinitions:
+          - AttributeName: LastUpdated
+            AttributeType: S
           - AttributeName: ASX code
+            AttributeType: S
+          - AttributeName: GSI1PK
             AttributeType: S
         KeySchema:
           - AttributeName: ASX code
             KeyType: HASH
+        GlobalSecondaryIndexes:
+            - IndexName: LastUpdatedIndex
+              KeySchema:
+                - AttributeName: GSI1PK
+                  KeyType: HASH
+                - AttributeName: LastUpdated
+                  KeyType: RANGE
+              Projection:
+                ProjectionType: KEYS_ONLY
+              ProvisionedThroughput:
+                ReadCapacityUnits: 10
+                WriteCapacityUnits: 10
         ProvisionedThroughput:
-          ReadCapacityUnits: 1
-          WriteCapacityUnits: 1
+          ReadCapacityUnits: 15
+          WriteCapacityUnits: 15
         TableName: ${self:custom.tableName}
+
