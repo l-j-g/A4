@@ -1,5 +1,4 @@
 import os
-
 import boto3
 from flask import Flask, jsonify, make_response, render_template, request
 from jinja2 import Environment, FileSystemLoader
@@ -8,9 +7,23 @@ import pandas as pd
 import csv 
 import datetime
 import logging
+from boto3.dynamodb.conditions import Key
+
+#####################
+# V A R I A B L E S #
+#####################
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
+
+dynamodb = boto3.resource('dynamodb')
+
+if os.environ.get('IS_OFFLINE'):
+    dynamodb = boto3.resource('dynamodb', region_name='localhost', endpoint_url='http://localhost:8000')
+
+TICKERS_TABLE = os.environ['TICKERS_TABLE']
+table = dynamodb.Table(os.environ['TICKERS_TABLE'])
+current_time = datetime.datetime.utcnow().isoformat()
 
 #################
 # H E L P E R S #
@@ -24,19 +37,26 @@ def clean(data):
     data = pd.DataFrame.to_dict(data)
     return(data)
 
-dynamodb = boto3.resource('dynamodb')
+def get_time():
+    current_time = datetime.datetime.utcnow().isoformat()
+    return current_time
 
-if os.environ.get('IS_OFFLINE'):
-    dynamodb = boto3.resource('dynamodb', region_name='localhost', endpoint_url='http://localhost:8000')
-
-TICKERS_TABLE = os.environ['TICKERS_TABLE']
-table = dynamodb.Table(os.environ['TICKERS_TABLE'])
+#####################
+# F U N C T I O N S #
+#####################
 
 def autoUpdate(event, context):
 
-    current_time = datetime.datetime.now().time()
+    # Get the last updated entry from the database and return the 'ASX code'.
+    response = table.query(
+        IndexName = 'LastUpdatedIndex',
+        KeyConditionExpression = Key('GSI1PK').eq('TICKERS') & Key('LastUpdated').lt(current_time),
+        ScanIndexForward = False,
+        Limit = 1
+    )
+    ticker = response['Items'][0]['ASX code']
 
-    key = {'ASX code': ticker}
+    # Get info, cash flow, income statement and balance sheet for the ticker, then update the database.
     ticker = ticker + '.AX'
     info = pd.DataFrame.to_dict(si.get_company_info(ticker))
     info = info['Value']
@@ -44,23 +64,25 @@ def autoUpdate(event, context):
     cash_flow = clean(si.get_cash_flow(ticker))
     income_statement = clean(si.get_income_statement(ticker))
     balance_sheet = clean(si.get_balance_sheet(ticker))
-    ticker = ticker[:-3]
 
-    response = table.update_item(
+    ticker = ticker[:-3]
+    key = {'ASX code': ticker}
+    table.update_item(
         Key = key,
-        UpdateExpression = 'set Info = :i, CashFlow = :c, IncomeStatement = :in, BalanceSheet = :bs',
+        UpdateExpression = 'set Info = :i, CashFlow = :c, IncomeStatement = :in, BalanceSheet = :bs, LastUpdated = :lu',
         ExpressionAttributeValues = {
             ':i': info,
             ':c': cash_flow,
             ':in': income_statement,
             ':bs': balance_sheet,
+            ':lu': get_time()
         }   
     )
-    logger.info("Updated " + ticker + ' at' + str(current_time)) 
-
+    logger.info("Updated " + ticker + ' at' + get_time()) 
     return
            
 def init(event, context):
+    
     with open('./ASX_Listed_Companies_24-02-2022_09-03-57_AEDT.csv', newline='') as csvfile:
         tickers_list = csv.reader(csvfile, delimiter=',')
 
@@ -73,9 +95,11 @@ def init(event, context):
                 header[2]: ticker[2],
                 header[3]: ticker[3],
                 header[4]: ticker[4],
-                'LastUpdated': datetime.datetime.utcnow().isoformat(),
+                'LastUpdated': get_time(),
+                'GSI1PK': 'TICKERS'
                 }
             )
+            logger.info(f"Uploaded {ticker[0]} to the database")
 
-    return(jsonify({"status": "init success"})) 
+    return({"status": "init success"}) 
 
