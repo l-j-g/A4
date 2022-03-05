@@ -46,7 +46,13 @@ provider:
             - dynamodb:UpdateItem
             - dynamodb:DeleteItem
           Resource:
-            - Fn::GetAtt: [ TickersTable, Arn ]
+            - Fn::GetAtt: [TickersTable, Arn]
+        - Effect: Allow
+          Action:
+            - dynamodb:Query
+            - dynamodb:Scan
+          Resource:
+            - !Sub "${TickersTable.Arn}/index/*"
   environment:
     TICKERS_TABLE: ${self:custom.tableName}
 package:
