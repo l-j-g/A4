@@ -6,6 +6,8 @@ import csv
 import datetime
 import logging
 from boto3.dynamodb.conditions import Key
+from threading import Thread
+import concurrent.futures
 
 #####################
 # V A R I A B L E S #
@@ -34,10 +36,23 @@ def clean(data):
     data = data.astype('Int64')
     data = pd.DataFrame.to_dict(data)
     return(data)
-
 def get_time():
     current_time = datetime.datetime.utcnow().isoformat()
     return current_time
+def get_info(ticker):
+    info = pd.DataFrame.to_dict(si.get_company_info(ticker))
+    info = info['Value']
+    return info
+def get_cash_flow(ticker):
+    cash_flow = clean(si.get_cash_flow(ticker))
+    return cash_flow
+def get_income_statement(ticker):
+    income_statement = clean(si.get_income_statement(ticker))
+    return income_statement
+def get_balance_sheet(ticker):
+    balance_sheet = clean(si.get_balance_sheet(ticker))
+    return balance_sheet
+    
 
 #####################
 # F U N C T I O N S #
@@ -54,31 +69,54 @@ def autoUpdate(event, context):
     )
     ticker = response['Items'][0]['ASX code']
 
-    # Get info, cash flow, income statement and balance sheet for the ticker, then update the database.
     ticker = ticker + '.AX'
-    info = pd.DataFrame.to_dict(si.get_company_info(ticker))
-    info = info['Value']
 
-    cash_flow = clean(si.get_cash_flow(ticker))
-    income_statement = clean(si.get_income_statement(ticker))
-    balance_sheet = clean(si.get_balance_sheet(ticker))
+    # Get info, cash flow, income statement and balance sheet for the ticker using threading
+    with concurrent.futures.ThreadPoolExecutor(max_workers=4) as executor: 
+        future_info = executor.submit(get_info, ticker)
+        future_cash_flow = executor.submit(get_cash_flow, ticker)
+        future_income_statement = executor.submit(get_income_statement, ticker)
+        future_balance_sheet = executor.submit(get_balance_sheet, ticker)
 
-    ticker = ticker[:-3]
-    key = {'ASX code': ticker}
-    table.update_item(
-        Key = key,
-        UpdateExpression = 'set Info = :i, CashFlow = :c, IncomeStatement = :in, BalanceSheet = :bs, LastUpdated = :lu',
-        ExpressionAttributeValues = {
+    info = future_info.result()
+    cash_flow = future_cash_flow.result()
+    income_statement = future_income_statement.result()
+    balance_sheet = future_balance_sheet.result()
+
+    # Get the last updated entry from the database and return the 'ASX code'.
+    response = table.query(
+        IndexName = 'LastUpdatedIndex',
+        KeyConditionExpression = Key('GSI1PK').eq('TICKERS') & Key('LastUpdated').lt(current_time),
+        ScanIndexForward = False,
+        Limit = 1
+    )
+    ticker = response['Items'][0]['ASX code']
+
+    # Update the ticker's summary
+    response = table.update_item(
+        Key={
+            'GSI1PK': 'TICKERS',
+            'ASX code': ticker
+        },
+        UpdateExpression="set #i = :i, #c = :c, #i_s = :i_s, #b_s = :b_s, #LastUpdated = :LastUpdated",
+        ExpressionAttributeNames={
+            '#i': 'Info',
+            '#c': 'Cash Flow',
+            '#i_s': 'Income Statement',
+            '#b_s': 'Balance Sheet',
+            '#LastUpdated': 'LastUpdated'
+        },
+        ExpressionAttributeValues={
             ':i': info,
             ':c': cash_flow,
-            ':in': income_statement,
-            ':bs': balance_sheet,
-            ':lu': get_time()
-        }   
+            ':i_s': income_statement,
+            ':b_s': balance_sheet,
+            ':LastUpdated': get_time()
+        }
     )
-    logger.info("Updated " + ticker + ' at' + get_time()) 
-    return
-           
+    logger.info("Updated " + ticker + 'at ' + get_time())
+    return({"status": "updated"})
+
 def init(event, context):
     
     with open('./ASX_Listed_Companies_24-02-2022_09-03-57_AEDT.csv', newline='') as csvfile:
