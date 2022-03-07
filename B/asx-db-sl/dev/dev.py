@@ -68,7 +68,7 @@ def autoUpdate(event, context):
     # Get the last updated entry from the database and return the 'ASX code'.
     response = table.query(
         IndexName = 'LastUpdatedIndex',
-        KeyConditionExpression = Key('GSI1PK').eq('TICKERS') & Key('LastUpdated').lt(current_time),
+        KeyConditionExpression = Key('GSI1PK').eq('TICKERS'), 
         ScanIndexForward = False,
         Limit = 1
     )
