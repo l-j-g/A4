@@ -120,18 +120,23 @@ def init(event, context):
 
         header = next(tickers_list, None)
         for ticker in tickers_list:
-            response = table.put_item(
-                Item={
-                header[0]: ticker[0],
-                header[1]: ticker[1],
-                header[2]: ticker[2],
-                header[3]: ticker[3],
-                header[4]: ticker[4],
-                'LastUpdated': get_time(),
-                'GSI1PK': 'TICKERS'
-                }
-            )
-            logger.info(f"Uploaded {ticker[0]} to the database")
+            try:
+                response = table.put_item(
+                    Item={
+                    header[0]: ticker[0] or "N/A",
+                    header[1]: ticker[1] or "N/A",
+                    header[2]: ticker[2] or "N/A",
+                    header[3]: ticker[3] or "N/A",
+                    header[4]: try_int(ticker[4]),
+                    'LastUpdated': datetime.datetime.utcnow().isoformat(),
+                    'GSI1PK': 'TICKERS'
+                    }
+                )
+                logger.info(f"Uploaded {ticker[0]} to the database")
+            except Exception as e
+                logger.error(f"Failed to upload {ticker[0]} to the database")
+                logger.error(e)
+                continue
+    return({"status": "initialized"})
 
-    return({"status": "init success"}) 
 
