@@ -92,6 +92,7 @@ functions:
 
 resources:
   Resources:
+
     TickersTable:
       Type: AWS::DynamoDB::Table
       Properties:
@@ -113,6 +114,9 @@ resources:
         KeySchema:
           - AttributeName: ASX code
             KeyType: HASH
+        ProvisionedThroughput:
+          ReadCapacityUnits: 5
+          WriteCapacityUnits: 5
 
         GlobalSecondaryIndexes:
             - IndexName: LastUpdatedIndex
@@ -194,8 +198,5 @@ resources:
               ProvisionedThroughput:
                 ReadCapacityUnits: 1
                 WriteCapacityUnits: 1
-        ProvisionedThroughput:
-          ReadCapacityUnits: 5
-          WriteCapacityUnits: 5
         TableName: ${self:custom.tableName}
 
