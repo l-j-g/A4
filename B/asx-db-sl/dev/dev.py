@@ -68,7 +68,6 @@ def autoUpdate(event, context):
         Limit = 1
     )
     ticker = response['Items'][0]['ASX code']
-
     ticker = ticker + '.AX'
 
     # Get info, cash flow, income statement and balance sheet for the ticker using threading
@@ -83,19 +82,11 @@ def autoUpdate(event, context):
     income_statement = future_income_statement.result()
     balance_sheet = future_balance_sheet.result()
 
-    # Get the last updated entry from the database and return the 'ASX code'.
-    response = table.query(
-        IndexName = 'LastUpdatedIndex',
-        KeyConditionExpression = Key('GSI1PK').eq('TICKERS') & Key('LastUpdated').lt(current_time),
-        ScanIndexForward = False,
-        Limit = 1
-    )
     ticker = response['Items'][0]['ASX code']
 
     # Update the ticker's summary
     response = table.update_item(
         Key={
-            'GSI1PK': 'TICKERS',
             'ASX code': ticker
         },
         UpdateExpression="set #i = :i, #c = :c, #i_s = :i_s, #b_s = :b_s, #LastUpdated = :LastUpdated",
@@ -114,7 +105,7 @@ def autoUpdate(event, context):
             ':LastUpdated': get_time()
         }
     )
-    logger.info("Updated " + ticker + 'at ' + get_time())
+    logger.info("Updated " + ticker + ' at ' + get_time())
     return({"status": "updated"})
 
 def init(event, context):

@@ -21,6 +21,8 @@ custom:
     layer: true
   capacities:
     - table: TickersTable # Dynamodb Resource
+      index: 
+      - ['LastUpdatedIndex', 'MarketCapIndex', 'ListingDateIndex', 'GroupIndex', 'NameIndex']
       read:
         minimum: 10    # Minimum read capacity
         maximum: 20  # Maximum read capacity
@@ -76,6 +78,7 @@ functions:
     - {Ref: PythonRequirementsLambdaLayer}
     events:
       - schedule: cron(0/2 * ? * * *)
+    memorySize: 512
   init:
     handler: dev/dev.init
     layers:
@@ -100,9 +103,18 @@ resources:
             AttributeType: S
           - AttributeName: GSI1PK
             AttributeType: S
+          - AttributeName: Market Cap
+            AttributeType: N
+          - AttributeName: GICs industry group
+            AttributeType: S
+          - AttributeName: Listing date
+            AttributeType: S
+          - AttributeName: Company name
+            AttributeType: S
         KeySchema:
           - AttributeName: ASX code
             KeyType: HASH
+
         GlobalSecondaryIndexes:
             - IndexName: LastUpdatedIndex
               KeySchema:
@@ -113,8 +125,76 @@ resources:
               Projection:
                 ProjectionType: KEYS_ONLY
               ProvisionedThroughput:
-                ReadCapacityUnits: 10
-                WriteCapacityUnits: 10
+                ReadCapacityUnits: 5
+                WriteCapacityUnits: 5
+
+            - IndexName: MarketCapIndex
+              KeySchema:
+                - AttributeName: GSI1PK
+                  KeyType: HASH
+                - AttributeName: Market Cap
+                  KeyType: RANGE
+              Projection:
+                ProjectionType: INCLUDE
+                NonKeyAttributes:
+                  - GICs industry group
+                  - Listing date
+                  - Company name
+                  - Market Cap
+              ProvisionedThroughput:
+                ReadCapacityUnits: 5
+                WriteCapacityUnits: 5
+
+            - IndexName: ListingDateIndex 
+              KeySchema:
+                - AttributeName: GSI1PK
+                  KeyType: HASH
+                - AttributeName: Listing date
+                  KeyType: RANGE
+              Projection:
+                ProjectionType: INCLUDE
+                NonKeyAttributes:
+                  - GICs industry group
+                  - Listing date
+                  - Company name
+                  - Market Cap
+              ProvisionedThroughput:
+                ReadCapacityUnits: 5
+                WriteCapacityUnits: 5
+
+            - IndexName: GroupIndex
+              KeySchema:
+                - AttributeName: GSI1PK
+                  KeyType: HASH
+                - AttributeName: GICs industry group
+                  KeyType: RANGE
+              Projection:
+                ProjectionType: INCLUDE
+                NonKeyAttributes:
+                  - GICs industry group
+                  - Listing date
+                  - Company name
+                  - Market Cap
+              ProvisionedThroughput:
+                ReadCapacityUnits: 5
+                WriteCapacityUnits: 5
+
+            - IndexName: NameIndex
+              KeySchema:
+                - AttributeName: GSI1PK
+                  KeyType: HASH
+                - AttributeName: Company name
+                  KeyType: RANGE
+              Projection:
+                ProjectionType: INCLUDE
+                NonKeyAttributes:
+                  - GICs industry group
+                  - Listing date
+                  - Company name
+                  - Market Cap
+              ProvisionedThroughput:
+                ReadCapacityUnits: 5
+                WriteCapacityUnits: 5
         ProvisionedThroughput:
           ReadCapacityUnits: 15
           WriteCapacityUnits: 15
