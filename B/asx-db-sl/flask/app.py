@@ -104,13 +104,6 @@ def test():
     print(ticker)
     return("OK")
 
-def clean(data):
-    data.columns = data.columns.astype(str)
-    data = data.fillna(0)
-    data = data.astype('float')
-    data = data.astype('Int64')
-    data = pd.DataFrame.to_dict(data)
-    return(data)
 
 
 @app.route('/init', methods=['POST'])
@@ -157,3 +150,11 @@ def try_int(data):
         data = 0
     return(data)
 
+
+def clean(data):
+    data.columns = data.columns.astype(str)
+    data = data.fillna(0)
+    data = data.astype('float')
+    data = data.astype('Int64')
+    data = pd.DataFrame.to_dict(data)
+    return(data)
