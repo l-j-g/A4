@@ -133,7 +133,7 @@ def init(event, context):
                     }
                 )
                 logger.info(f"Uploaded {ticker[0]} to the database")
-            except Exception as e
+            except Exception as e:
                 logger.error(f"Failed to upload {ticker[0]} to the database")
                 logger.error(e)
                 continue
