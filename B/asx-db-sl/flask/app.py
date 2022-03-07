@@ -58,7 +58,9 @@ def get_time():
     current_time = datetime.datetime.utcnow().isoformat()
     return current_time
 
-'''
+##################################################
+# These Functions Are Used for Development only #
+#################################################
 @app.route('/update/<string:ticker>', methods=['POST'])
 def add(ticker):
 
@@ -88,16 +90,19 @@ def add(ticker):
 
 @app.route('/test', methods=['POST'])
 def test():
-    Fetch the oldest entry from the database and return the 'ASX code'.
+    # Fetch the oldest entry from the database and return the 'ASX code'.
 
     response = table.query(
         IndexName = 'LastUpdatedIndex',
         KeyConditionExpression = Key('GSI1PK').eq('TICKERS'),
         ScanIndexForward = False,
-        Limit = 1
+        Limit = 25
     )
-    ticker = response['Items'][0]['ASX code']
-    return(ticker)
+    print(response)
+    print(type(response))
+    ticker = response['Items']
+    print(ticker)
+    return("OK")
 
 def clean(data):
     data.columns = data.columns.astype(str)
@@ -117,19 +122,38 @@ def init():
 
         header = next(tickers_list, None)
         for ticker in tickers_list:
-            response = table.put_item(
-                Item={
-                header[0]: ticker[0],
-                header[1]: ticker[1],
-                header[2]: ticker[2],
-                header[3]: ticker[3],
-                header[4]: ticker[4],
-                'LastUpdated': datetime.datetime.utcnow().isoformat(),
-                'GSI1PK': 'TICKERS'
-                }
-            )
-            print(f"added {ticker[0]} to the database")
+            try:
+                response = table.put_item(
+                    Item={
+                    header[0]: ticker[0] or "N/A",
+                    header[1]: ticker[1] or "N/A",
+                    header[2]: ticker[2] or "N/A",
+                    header[3]: ticker[3] or "N/A",
+                    header[4]: try_int(ticker[4]),
+                    'LastUpdated': datetime.datetime.utcnow().isoformat(),
+                    'GSI1PK': 'TICKERS'
+                    }
+                )
+                print(f"added {ticker[0]} to the database")
+            except Exception as e:
+                print({
+                    header[0]: ticker[0],
+                    header[1]: ticker[1],
+                    header[2]: ticker[2], 
+                    header[3]: ticker[3],
+                    header[4]: try_int(ticker[4]),
+                    'LastUpdated': datetime.datetime.utcnow().isoformat(),
+                    'GSI1PK': 'TICKERS'
+                    })
+                print(e)
+                return("Error")
 
     return(jsonify({"status": "init success"}))
 
-'''
+def try_int(data):
+    try:
+        data = int(data)
+    except:
+        data = 0
+    return(data)
+
