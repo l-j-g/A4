@@ -52,7 +52,12 @@ def get_income_statement(ticker):
 def get_balance_sheet(ticker):
     balance_sheet = clean(si.get_balance_sheet(ticker))
     return balance_sheet
-    
+def try_int(data):
+    try:
+        data = int(data)
+    except:
+        data = 0
+    return(data)
 
 #####################
 # F U N C T I O N S #
@@ -89,20 +94,20 @@ def autoUpdate(event, context):
         Key={
             'ASX code': ticker
         },
-        UpdateExpression="set #i = :i, #c = :c, #i_s = :i_s, #b_s = :b_s, #LastUpdated = :LastUpdated",
+        UpdateExpression="set #i = :i, #c = :c, #is = :is, #bs = :bs, #lu = :lu",
         ExpressionAttributeNames={
             '#i': 'Info',
             '#c': 'Cash Flow',
-            '#i_s': 'Income Statement',
-            '#b_s': 'Balance Sheet',
-            '#LastUpdated': 'LastUpdated'
+            '#is': 'Income Statement',
+            '#bs': 'Balance Sheet',
+            '#lu': 'LastUpdated'
         },
         ExpressionAttributeValues={
             ':i': info,
             ':c': cash_flow,
-            ':i_s': income_statement,
-            ':b_s': balance_sheet,
-            ':LastUpdated': get_time()
+            ':is': income_statement,
+            ':bs': balance_sheet,
+            ':lu': get_time()
         }
     )
     logger.info("Updated " + ticker + ' at ' + get_time())
