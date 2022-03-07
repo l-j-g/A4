@@ -10,6 +10,7 @@ import json
 from decimal import Decimal
 from boto3.dynamodb.conditions import Key
 import datetime
+import locale
 
 app = Flask(__name__)
 
@@ -45,6 +46,42 @@ def query(ticker):
         return jsonify({'error': 'Could not find any data with provided "ASX code"'}), 404
     return jsonify(item)
 
+@app.route('/search/', defaults={'group': 'ticker', 'order': 'asc'})
+@app.route('/search/groupBy=<string:group>&orderBy=<string:order>')  
+def get_tickers(group, order):
+     # Query the table returning the first 25 tickers
+    '''
+    groupDict = {
+        'ticker': 'TickerIndex',
+        'marketCap': 'MarketCapIndex',
+        'companyName': 'NameIndex',
+        'group': 'GroupIndex',
+        'listingDate': 'ListingDateIndex'
+    }
+    orderDict = {
+        'asc': True,
+        'dsc': False
+    }
+    '''
+    headers = {
+            "ticker": "Tickers",
+            "companyName": "Company Name",
+            "group": "Category",
+            "marketCap": "Market Capitalization",
+            "listingDate": "Date Listed"
+        }
+
+    response = query(group, order)
+
+    data = {
+        "page_title": "Search Ticker",
+        'tickers': response['Items'],
+        'group': group,
+        'order': order
+
+    }
+
+    return render_template("ticker_index.html", page_data=data, headers=headers)
 
 @app.errorhandler(404)
 def resource_not_found(e):
@@ -53,6 +90,35 @@ def resource_not_found(e):
 #################
 # H E L P E R S #
 #################
+
+def query(group, order, limit=25):
+    """ Function to scan the table and return the data
+
+    Args:
+        sortBy (str): Which Index to get the data from ['LastUpdatedIndex', 'MarketCapIndex', 'ListingDateIndex', 'GroupIndex', 'NameIndex']
+        sortOrder (bool): True for Ascending, False for Descending
+        limit (int): number of items to return
+    """
+
+    groupDict = {
+        'ticker': 'TickerIndex',
+        'marketCap': 'MarketCapIndex',
+        'companyName': 'NameIndex',
+        'group': 'GroupIndex',
+        'listingDate': 'ListingDateIndex'
+    }
+    orderDict = {
+        'asc': True,
+        'dsc': False
+    }
+    response = table.query(
+        IndexName = groupDict[group],
+        KeyConditionExpression = Key('GSI1PK').eq('TICKERS'),
+        ScanIndexForward = orderDict[order],
+        Limit = limit
+    )
+
+    return response
 
 def get_time():
     current_time = datetime.datetime.utcnow().isoformat()
