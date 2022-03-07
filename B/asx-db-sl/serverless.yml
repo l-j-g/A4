@@ -21,7 +21,7 @@ custom:
     layer: true
   capacities:
     - table: TickersTable # Dynamodb Resource
-      index: ['LastUpdatedIndex', 'MarketCapIndex', 'ListingDateIndex', 'GroupIndex', 'NameIndex']
+      index: ['LastUpdatedIndex', 'MarketCapIndex', 'ListingDateIndex', 'GroupIndex', 'NameIndex', TickerIndex]
       read:
         minimum: 1    # Minimum read capacity
         maximum: 20  # Maximum read capacity
@@ -187,6 +187,23 @@ resources:
                 - AttributeName: GSI1PK
                   KeyType: HASH
                 - AttributeName: Company name
+                  KeyType: RANGE
+              Projection:
+                ProjectionType: INCLUDE
+                NonKeyAttributes:
+                  - GICs industry group
+                  - Listing date
+                  - Company name
+                  - Market Cap
+              ProvisionedThroughput:
+                ReadCapacityUnits: 1
+                WriteCapacityUnits: 1
+
+            - IndexName: TickerIndex
+              KeySchema:
+                - AttributeName: GSI1PK
+                  KeyType: HASH
+                - AttributeName: ASX code
                   KeyType: RANGE
               Projection:
                 ProjectionType: INCLUDE
