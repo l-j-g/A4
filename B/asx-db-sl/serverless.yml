@@ -72,7 +72,7 @@ functions:
       - http:
           path: /{proxy+}
           method: ANY
-  auto_update:
+  autoUpdate:
     handler: dev/dev.autoUpdate
     layers:
     - {Ref: PythonRequirementsLambdaLayer}
