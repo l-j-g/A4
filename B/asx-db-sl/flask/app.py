@@ -1,7 +1,8 @@
+import pdb
 from ast import Expression
 import os
 import boto3
-from flask import Flask, jsonify, make_response, render_template, request
+from flask import Flask, jsonify, make_response, render_template, request, session
 import yahoo_fin.stock_info as si
 import yfinance as yf
 import pandas as pd
@@ -11,6 +12,7 @@ from decimal import Decimal
 from boto3.dynamodb.conditions import Key
 import datetime
 import locale
+
 locale.setlocale( locale.LC_ALL, '' )
 
 
@@ -35,11 +37,12 @@ def display_homepage():
     return render_template('home.html', page_data=data)
 
 
-@app.route('/search/', defaults={'group': 'ticker', 'order': 'asc', 'pageKey': None})
-@app.route('/search/groupBy=<string:group>&orderBy=<string:order>', defaults={'pageKey': None})  
-@app.route('/search/groupBy=<string:group>&orderBy=<string:order>&key=<string:pageKey>', defaults={'pageKey': None})  
-def get_tickers(group, order, pageKey):
+@app.route('/search/')
+@app.route('/search/groupBy=<group>&orderBy=<order>')  
+@app.route('/search/groupBy=<group>&orderBy=<order>&key=<lastKey>') 
+def get_tickers(group='ticker', order='asc', lastKey='None'):
      # Query the table returning the first 25 tickers
+
     headers = {
             "ticker": "Tickers",
             "companyName": "Company Name",
@@ -47,32 +50,34 @@ def get_tickers(group, order, pageKey):
             "marketCap": "Market Capitalization",
             "listingDate": "Date Listed"
         }
-
-    response = search(group, order, pageKey)
+    response = search(group, order, lastKey)
     nextKey = response['LastEvaluatedKey'].get('ASX code')
-    return(response) 
+    LeK = response.get('LastEvaluatedKey')
+
     data = {
         "page_title": "Search Ticker",
         'tickers': response['Items'],
         'group': group,
         'order': order,
         'next_key': nextKey,
-        'last_key': pageKey
+        'last_key': lastKey 
     }
     for ticker in data['tickers']:
            ticker['Market Cap'] = locale.currency(ticker['Market Cap'], grouping=True)
 
     return render_template("ticker_search.html", page_data=data, headers=headers)
+
+
 @app.route('/ticker/<string:ticker>')
 def get_ticker(ticker):
    ticker = ticker.upper()
    response = table.query(
-       
+       KeyConditionExpression=Key('ticker').eq(ticker)
    )
    data = {
        'page_title': 'Ticker Details',
-
    } 
+   return(response)
 
 @app.errorhandler(404)
 def resource_not_found(e):
@@ -90,7 +95,6 @@ def search(group, order, pageKey=None, limit=25):
         sortOrder (bool): True for Ascending, False for Descending
         limit (int): number of items to return
     """
-
     groupDict = {
         'ticker': 'TickerIndex',
         'marketCap': 'MarketCapIndex',
@@ -109,7 +113,12 @@ def search(group, order, pageKey=None, limit=25):
         'Limit': limit
     }
     if pageKey:
-        queryDict['ExclusiveStartKey'] = ExclusiveStartKey
+        if pageKey != 'None':
+            queryDict['ExclusiveStartKey'] = {
+            'GSI1PK': 'TICKERS',
+            'ASX code': pageKey
+            }
+
     response = table.query(**queryDict)
 
     return response
@@ -152,17 +161,12 @@ def add(ticker):
 def test():
     # Fetch the oldest entry from the database and return the 'ASX code'.
 
-    response = table.query(
-        IndexName = 'LastUpdatedIndex',
-        KeyConditionExpression = Key('GSI1PK').eq('TICKERS'),
-        ScanIndexForward = False,
-        Limit = 25
-    )
-    print(response)
-    print(type(response))
-    ticker = response['Items']
-    print(ticker)
-    return("OK")
+
+    ticker = '88E.AX'
+    info = pd.DataFrame.to_dict(si.get_company_info(ticker))
+    info = info['Value']
+
+    return info
 
 
 

@@ -56,6 +56,7 @@ provider:
             - !Sub "${TickersTable.Arn}/index/*"
   environment:
     TICKERS_TABLE: ${self:custom.tableName}
+    API_GATEWAY_BASE_PATH: dev/
 package:
   patterns:
     - '!.dynamodb/**'
