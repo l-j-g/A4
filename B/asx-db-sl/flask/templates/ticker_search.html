@@ -28,7 +28,7 @@
         {% for ticker in page_data.tickers %}
             <tr>
                 <td>
-                    <a href="/tickers/{{ ticker.ticker_id }}/info">{{ ticker['ASX code'] }}</a>
+                    <a href="/ticker/{{ ticker['ASX code']}}">{{ ticker['ASX code'] }}</a>
                 </td>
                 <td>
                     {{ ticker['Company name']}}
