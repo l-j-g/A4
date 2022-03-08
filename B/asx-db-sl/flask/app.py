@@ -11,6 +11,8 @@ from decimal import Decimal
 from boto3.dynamodb.conditions import Key
 import datetime
 import locale
+locale.setlocale( locale.LC_ALL, '' )
+
 
 app = Flask(__name__)
 
@@ -32,37 +34,12 @@ def display_homepage():
     }
     return render_template('home.html', page_data=data)
 
-@app.route('/query/<string:ticker>', methods=['POST'])
-def query(ticker):
 
-    response = dynamodb_client.get_item(
-        TableName=TICKERS_TABLE, Key={
-            'ASX code': {'S': ticker},
-        }
-    )
-    item = response.get('Item')
-
-    if not item:
-        return jsonify({'error': 'Could not find any data with provided "ASX code"'}), 404
-    return jsonify(item)
-
-@app.route('/search/', defaults={'group': 'ticker', 'order': 'asc'})
-@app.route('/search/groupBy=<string:group>&orderBy=<string:order>')  
-def get_tickers(group, order):
+@app.route('/search/', defaults={'group': 'ticker', 'order': 'asc', 'pageKey': None})
+@app.route('/search/groupBy=<string:group>&orderBy=<string:order>', defaults={'pageKey': None})  
+@app.route('/search/groupBy=<string:group>&orderBy=<string:order>&key=<string:pageKey>', defaults={'pageKey': None})  
+def get_tickers(group, order, pageKey):
      # Query the table returning the first 25 tickers
-    '''
-    groupDict = {
-        'ticker': 'TickerIndex',
-        'marketCap': 'MarketCapIndex',
-        'companyName': 'NameIndex',
-        'group': 'GroupIndex',
-        'listingDate': 'ListingDateIndex'
-    }
-    orderDict = {
-        'asc': True,
-        'dsc': False
-    }
-    '''
     headers = {
             "ticker": "Tickers",
             "companyName": "Company Name",
@@ -71,17 +48,31 @@ def get_tickers(group, order):
             "listingDate": "Date Listed"
         }
 
-    response = query(group, order)
-
+    response = search(group, order, pageKey)
+    nextKey = response['LastEvaluatedKey'].get('ASX code')
+    return(response) 
     data = {
         "page_title": "Search Ticker",
         'tickers': response['Items'],
         'group': group,
-        'order': order
-
+        'order': order,
+        'next_key': nextKey,
+        'last_key': pageKey
     }
+    for ticker in data['tickers']:
+           ticker['Market Cap'] = locale.currency(ticker['Market Cap'], grouping=True)
 
-    return render_template("ticker_index.html", page_data=data, headers=headers)
+    return render_template("ticker_search.html", page_data=data, headers=headers)
+@app.route('/ticker/<string:ticker>')
+def get_ticker(ticker):
+   ticker = ticker.upper()
+   response = table.query(
+       
+   )
+   data = {
+       'page_title': 'Ticker Details',
+
+   } 
 
 @app.errorhandler(404)
 def resource_not_found(e):
@@ -91,7 +82,7 @@ def resource_not_found(e):
 # H E L P E R S #
 #################
 
-def query(group, order, limit=25):
+def search(group, order, pageKey=None, limit=25):
     """ Function to scan the table and return the data
 
     Args:
@@ -111,12 +102,15 @@ def query(group, order, limit=25):
         'asc': True,
         'dsc': False
     }
-    response = table.query(
-        IndexName = groupDict[group],
-        KeyConditionExpression = Key('GSI1PK').eq('TICKERS'),
-        ScanIndexForward = orderDict[order],
-        Limit = limit
-    )
+    queryDict = {
+        'IndexName': groupDict[group],
+        'KeyConditionExpression': Key('GSI1PK').eq('TICKERS'),
+        'ScanIndexForward': orderDict[order],
+        'Limit': limit
+    }
+    if pageKey:
+        queryDict['ExclusiveStartKey'] = ExclusiveStartKey
+    response = table.query(**queryDict)
 
     return response
 
