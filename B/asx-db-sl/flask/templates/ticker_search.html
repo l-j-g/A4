@@ -14,12 +14,12 @@
         <thead>
             <tr>    
                 {% for group, title in headers.items() %}
-                {% if group == page_data.group and page_data.order == "dsc" %}
-                <th><a href="/search/groupBy={{group}}&orderBy=asc&key={{page_data.last_key}}"> {{ title }} [ ⬇ ] </a></th>
-                {% elif group == page_data.group and page_data.order == "asc" %}
-                <th><a href="/search/groupBy={{group}}&orderBy=dsc&key={{page_data.last_key}}"> {{ title }} [ ⬆ ] </a></th>
+                {% if group == session.group and session.order == "dsc" %}
+                <th><a href="/search/groupBy={{group}}&orderBy=asc"> {{ title }} [ ⬇ ] </a></th>
+                {% elif group == session.group and session.order == "asc" %}
+                <th><a href="/search/groupBy={{group}}&orderBy=dsc"> {{ title }} [ ⬆ ] </a></th>
                 {% else %}
-                <th><a href="/search/groupBy={{group}}&orderBy=asc&key={{page_data.last_key}}"> {{ title }} </a></th>
+                <th><a href="/search/groupBy={{group}}&orderBy=asc"> {{ title }} </a></th>
                 {% endif %}
                 {% endfor %}
             </tr>
@@ -47,10 +47,11 @@
     </table>
     <nav aria-label="Page navigation example">
         <ul class="pagination">
-            {% if page_data.last_key != None and page_data.last_key != "None" %}
+            {% if session.page != 1 %}    
           <li class="page-item"><a class="page-link" href="#">Previous</a></li>
+          <li class="page-item"><a class="page-link" href="#">{{session.page}}</a></li>
             {% endif %}
-          <li class="page-item"><a class="page-link" href="/search/groupBy={{page_data.group}}&orderBy={{page_data.order}}&key={{page_data.next_key}}">Next</a></li>
+          <li class="page-item"><a class="page-link" href="/search/next">Next</a></li>
         </ul>
       </nav>
 

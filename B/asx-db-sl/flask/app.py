@@ -13,11 +13,13 @@ from boto3.dynamodb.conditions import Key
 import datetime
 import locale
 
-locale.setlocale( locale.LC_ALL, '' )
 
 
 app = Flask(__name__)
 
+locale.setlocale( locale.LC_ALL, '' )
+SECRET_KEY = os.urandom(12)
+app.secret_key = SECRET_KEY
 dynamodb_client = boto3.client('dynamodb')
 dynamodb = boto3.resource('dynamodb')
 
@@ -39,9 +41,19 @@ def display_homepage():
 
 @app.route('/search/')
 @app.route('/search/groupBy=<group>&orderBy=<order>')  
-@app.route('/search/groupBy=<group>&orderBy=<order>&key=<lastKey>') 
-def get_tickers(group='ticker', order='asc', lastKey='None'):
+def get_tickers(group='ticker', order='asc'):
      # Query the table returning the first 25 tickers
+    session['LastEvaluatedKey'] = 'NONE' 
+    response = search(group, order)
+    session['group'] = group
+    session['order'] = order
+    session['page'] = 1
+    session['LastEvaluatedKey'] = response.get('LastEvaluatedKey')
+
+    data = {
+        "page_title": "Search Ticker",
+        'tickers': response['Items'],
+    }
 
     headers = {
             "ticker": "Tickers",
@@ -50,23 +62,40 @@ def get_tickers(group='ticker', order='asc', lastKey='None'):
             "marketCap": "Market Capitalization",
             "listingDate": "Date Listed"
         }
-    response = search(group, order, lastKey)
-    nextKey = response['LastEvaluatedKey'].get('ASX code')
-    LeK = response.get('LastEvaluatedKey')
+    
+    for key in session:
+        print(key, session[key])
+
+    for ticker in data['tickers']:
+           ticker['Market Cap'] = locale.currency(ticker['Market Cap'], grouping=True)
+
+    return render_template("ticker_search.html", page_data=data, headers=headers, session=session)
+
+@app.route('/search/next')
+def get_next_tickers():
+
+    for key in session:
+        print(key, session[key])
+
+    response=search(session['group'], session['order'], session['LastEvaluatedKey'])
+    session['LastEvaluatedKey'] = response.get('LastEvaluatedKey')
+    session['page'] += 1
+
+    headers = {
+            "ticker": "Tickers",
+            "companyName": "Company Name",
+            "group": "Category",
+            "marketCap": "Market Capitalization",
+            "listingDate": "Date Listed"
+        }
 
     data = {
         "page_title": "Search Ticker",
         'tickers': response['Items'],
-        'group': group,
-        'order': order,
-        'next_key': nextKey,
-        'last_key': lastKey 
     }
-    for ticker in data['tickers']:
-           ticker['Market Cap'] = locale.currency(ticker['Market Cap'], grouping=True)
 
-    return render_template("ticker_search.html", page_data=data, headers=headers)
-
+    return render_template("ticker_search.html", page_data=data, headers=headers, session=session)
+    
 
 @app.route('/ticker/<string:ticker>')
 def get_ticker(ticker):
@@ -112,16 +141,14 @@ def search(group, order, pageKey=None, limit=25):
         'ScanIndexForward': orderDict[order],
         'Limit': limit
     }
-    if pageKey:
-        if pageKey != 'None':
-            queryDict['ExclusiveStartKey'] = {
-            'GSI1PK': 'TICKERS',
-            'ASX code': pageKey
-            }
+    print(session)
 
-    response = table.query(**queryDict)
+    if 'LastEvaluatedKey' in session:
+        if session['LastEvaluatedKey'] != 'NONE':
+            queryDict['ExclusiveStartKey'] = session['LastEvaluatedKey']
 
-    return response
+
+    return table.query(**queryDict)
 
 def get_time():
     current_time = datetime.datetime.utcnow().isoformat()
