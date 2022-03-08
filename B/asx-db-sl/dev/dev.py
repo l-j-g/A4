@@ -40,17 +40,30 @@ def get_time():
     current_time = datetime.datetime.utcnow().isoformat()
     return current_time
 def get_info(ticker):
-    info = pd.DataFrame.to_dict(si.get_company_info(ticker))
-    info = info['Value']
+    try:
+        info = pd.DataFrame.to_dict(si.get_company_info(ticker))
+        info = info['Value']
+    except:
+        info = "N/A"
     return info
 def get_cash_flow(ticker):
-    cash_flow = clean(si.get_cash_flow(ticker))
+    try:
+        cash_flow = clean(si.get_cash_flow(ticker))
+    except: 
+        cash_flow = "N/A"
     return cash_flow
 def get_income_statement(ticker):
-    income_statement = clean(si.get_income_statement(ticker))
+    try:
+        income_statement = clean(si.get_income_statement(ticker))
+    except:
+        income_statement = "N/A"
     return income_statement
+    
 def get_balance_sheet(ticker):
-    balance_sheet = clean(si.get_balance_sheet(ticker))
+    try:
+        balance_sheet = clean(si.get_balance_sheet(ticker))
+    except:
+        balance_sheet = "N/A"
     return balance_sheet
 def try_int(data):
     try:
@@ -69,13 +82,14 @@ def autoUpdate(event, context):
     response = table.query(
         IndexName = 'LastUpdatedIndex',
         KeyConditionExpression = Key('GSI1PK').eq('TICKERS'), 
-        ScanIndexForward = False,
+        ScanIndexForward = True,
         Limit = 1
     )
     ticker = response['Items'][0]['ASX code']
     ticker = ticker + '.AX'
 
     # Get info, cash flow, income statement and balance sheet for the ticker using threading
+    logger.info(f"Fetching data for {ticker}...")
     with concurrent.futures.ThreadPoolExecutor(max_workers=4) as executor: 
         future_info = executor.submit(get_info, ticker)
         future_cash_flow = executor.submit(get_cash_flow, ticker)
