@@ -167,3 +167,16 @@ serverless wsgi serve
 For additional local development capabilities of `serverless-wsgi` and `serverless-dynamodb-local` plugins, please refer to corresponding GitHub repositories:
 - https://github.com/logandk/serverless-wsgi 
 - https://github.com/99x/serverless-dynamodb-local
+
+## Features 
+
+- Cloud native, serverless application that is scalable, reliable, easy to deploy and cheap
+- Uses AWS Lambda, DynamoDB, and Flask to provide a REST-Like API
+- An API Key is used to authorise a function to initialise database for all 2,000+ tickers listed on the ASX.
+- Information, Cash Flow, Balance Sheet and Income Statement stored for each ticker.
+- Fresh data is scraped via cron job every 2 minutes for the oldest ticker data in the database.
+- 6 Global Secondary Indexes enables the database to be sorted by Ticker, Name, Market Cap, Date Listed and Date Updated.
+- A single DynamoDB table is used to store all data. 
+- Threading is used to speed up (4x) the execution time of scraping Info, Cash flow, Balance sheet and Income statement
+- Custom pagination is implemented to allow for pagination (forward and reverse of the data) 
+

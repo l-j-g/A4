@@ -2,222 +2,44 @@ import pdb
 from ast import Expression
 import os
 import boto3
-from flask import Flask, jsonify, make_response, render_template, request, session
+from flask import Flask, jsonify, make_response, render_template, request, session 
 import yahoo_fin.stock_info as si
 import yfinance as yf
 import pandas as pd
-import csv 
-import json
 from decimal import Decimal
 from boto3.dynamodb.conditions import Key
 import datetime
 import locale
 from functools import reduce
 
-
-
 app = Flask(__name__)
 
-locale.setlocale( locale.LC_ALL, '' )
 SECRET_KEY = os.urandom(12)
 app.secret_key = SECRET_KEY
-dynamodb_client = boto3.client('dynamodb')
+#dynamodb_client = boto3.client('dynamodb')
+
 dynamodb = boto3.resource('dynamodb')
 
 if os.environ.get('IS_OFFLINE'):
-    dynamodb_client = boto3.client('dynamodb', region_name='localhost', endpoint_url='http://localhost:8000')
+   # dynamodb_client = boto3.client('dynamodb', region_name='localhost', endpoint_url='http://localhost:8000')
     dynamodb = boto3.resource('dynamodb', region_name='localhost', endpoint_url='http://localhost:8000')
 
 
 TICKERS_TABLE = os.environ['TICKERS_TABLE']
 table = dynamodb.Table(os.environ['TICKERS_TABLE'])
 
-@app.route('/')
-def display_homepage():
-    data = {
-        'page_title': 'Homepage',
-    }
-    return render_template('home.html', page_data=data)
+from controllers import registerable_controllers
+for controller in registerable_controllers:
+    app.register_blueprint(controller)
 
-
-@app.route('/search/')
-@app.route('/search/groupBy=<group>&orderBy=<order>')  
-def get_tickers(group='ticker', order='asc'):
-     # Query the table returning the first 25 tickers
-    session['LastEvaluatedKey'] = 'NONE' 
-    response = search(group, order)
-    session['group'] = group
-    session['order'] = order
-    session['page'] = 1
-    session['LastEvaluatedKey'] = response.get('LastEvaluatedKey')
-
-    data = {
-        "page_title": "Search Ticker",
-        'tickers': response['Items'],
-    }
-
-    headers = {
-            "ticker": "Tickers",
-            "companyName": "Company Name",
-            "group": "Category",
-            "marketCap": "Market Capitalization",
-            "listingDate": "Date Listed"
-        }
-    
-    for ticker in data['tickers']:
-           ticker['Market Cap'] = locale.currency(ticker['Market Cap'], grouping=True)
-
-    return render_template("ticker_search.html", page_data=data, headers=headers, session=session)
-
-@app.route('/search/next')
-def get_next_tickers():
-
-    for key in session:
-        print(key, session[key])
-
-    response=search(session['group'], session['order'], session['LastEvaluatedKey'])
-    session['LastEvaluatedKey'] = response.get('LastEvaluatedKey')
-    session['page'] += 1
-
-    headers = {
-            "ticker": "Tickers",
-            "companyName": "Company Name",
-            "group": "Category",
-            "marketCap": "Market Capitalization",
-            "listingDate": "Date Listed"
-        }
-
-    data = {
-        "page_title": "Search Ticker",
-        'tickers': response['Items'],
-    }
-
-    return render_template("ticker_search.html", page_data=data, headers=headers, session=session)
-    
-
-@app.route('/ticker/<string:ticker>')
-@app.route('/ticker/<string:ticker>/info')
-def view_info(ticker):
-   ticker = ticker.upper()
-   response = table.get_item(
-       Key={
-           'ASX code': ticker
-           }
-   )
-  
-   headers = {
-        "sector": "Sector:", 
-        "industry": "Industry:",
-        "website": "Website:",
-        "address1": "Address:",  
-        "city": "City:",
-        "state": "State:",
-        "phone": "Phone Number:",
-        "zip": "Postcode:",
-        "country": "Country:",
-    } 
-   data = {
-       'page_title': 'Ticker Details',
-       'ticker': response['Item'],
-       
-   } 
-
-   return(render_template('info.html', page_data=data, headers=headers))
-
-@app.route('/ticker/<string:ticker>/cash_flow')
-def view_cash_flow(ticker):
-    ticker = ticker.upper()
-    response = table.get_item(
-        Key={
-            'ASX code': ticker
-        }
-    )
-
-    cashflow = pd.DataFrame(response['Item']['Cash Flow'])
-
-    data = {
-        'page_title': 'Cash Flow',
-        'ticker': response['Item'],
-    }
-
-    return render_template('cash_flow.html', page_data=data, tables=[cashflow.to_html(classes='data', header='true')])
-@app.route('/ticker/<string:ticker>/balance_sheet')
-def view_balance_sheet(ticker):
-    ticker = ticker.upper()
-    response = table.get_item(
-        Key={
-            'ASX code': ticker
-        }
-    )
-    balance_sheet = pd.DataFrame(response['Item']['Balance Sheet'])
-    data = {
-        'page_title': 'Balance Sheet',
-        'ticker': response['Item'],
-    }
-    return render_template('balance_sheet.html', page_data=data, tables=[balance_sheet.to_html(classes='data', header='true')])
-@app.route('/ticker/<string:ticker>/income_statement')
-def view_income_statement(ticker):
-    ticker = ticker.upper()
-    response = table.get_item(
-        Key={
-            'ASX code': ticker
-        }
-    )
-    income_statement = pd.DataFrame(response['Item']['Income Statement'])
-
-
-    data = {
-        'page_title': 'Income Statement',
-        'ticker': response['Item'],
-    }
-    return render_template('income_statement.html', page_data=data, tables=[income_statement.to_html(classes='data', header='true')])
 
 @app.errorhandler(404)
 def resource_not_found(e):
     return make_response(jsonify(error='Not found!'), 404)
 
-#################
-# H E L P E R S #
-#################
 
-def search(group, order, pageKey=None, limit=25):
-    """ Function to scan the table and return the data
-
-    Args:
-        sortBy (str): Which Index to get the data from ['LastUpdatedIndex', 'MarketCapIndex', 'ListingDateIndex', 'GroupIndex', 'NameIndex']
-        sortOrder (bool): True for Ascending, False for Descending
-        limit (int): number of items to return
-    """
-    groupDict = {
-        'ticker': 'TickerIndex',
-        'marketCap': 'MarketCapIndex',
-        'companyName': 'NameIndex',
-        'group': 'GroupIndex',
-        'listingDate': 'ListingDateIndex'
-    }
-    orderDict = {
-        'asc': True,
-        'dsc': False
-    }
-    queryDict = {
-        'IndexName': groupDict[group],
-        'KeyConditionExpression': Key('GSI1PK').eq('TICKERS'),
-        'ScanIndexForward': orderDict[order],
-        'Limit': limit
-    }
-
-    if 'LastEvaluatedKey' in session:
-        if session['LastEvaluatedKey'] != 'NONE':
-            queryDict['ExclusiveStartKey'] = session['LastEvaluatedKey']
-
-
-    return table.query(**queryDict)
-
-def get_time():
-    current_time = datetime.datetime.utcnow().isoformat()
-    return current_time
-
-##################################################
+'''
+#################################################
 # These Functions Are Used for Development only #
 #################################################
 @app.route('/update/<string:ticker>', methods=['POST'])
@@ -235,15 +57,24 @@ def add(ticker):
     ticker = ticker[:-3]
 
     response = table.update_item(
-        Key = key,
-        UpdateExpression = 'set Info = :i, CashFlow = :c, IncomeStatement = :in, BalanceSheet = :bs, LastUpdated = :lu',
-        ExpressionAttributeValues = {
+        Key={
+            'ASX code': ticker
+        },
+        UpdateExpression="set #i = :i, #c = :c, #is = :is, #bs = :bs, #lu = :lu",
+        ExpressionAttributeNames={
+            '#i': 'Info',
+            '#c': 'Cash Flow',
+            '#is': 'Income Statement',
+            '#bs': 'Balance Sheet',
+            '#lu': 'LastUpdated'
+        },
+        ExpressionAttributeValues={
             ':i': info,
             ':c': cash_flow,
-            ':in': income_statement,
+            ':is': income_statement,
             ':bs': balance_sheet,
-            ':lu': datetime.datetime.utcnow().isoformat(),
-        }   
+            ':lu': get_time()
+        }
     )
     return("OK")
 
@@ -312,3 +143,4 @@ def clean(data):
     data = data.astype('Int64')
     data = pd.DataFrame.to_dict(data)
     return(data)
+'''

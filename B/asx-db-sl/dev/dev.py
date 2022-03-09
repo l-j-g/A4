@@ -44,7 +44,7 @@ def get_info(ticker):
         info = pd.DataFrame.to_dict(si.get_company_info(ticker))
         info = info['Value']
     except:
-        logger.error(f'failed to get info for {ticker}')
+        logger.error(f'Failed to get info for + { ticker }')
         info = "N/A"
     return info
 def get_cash_flow(ticker):

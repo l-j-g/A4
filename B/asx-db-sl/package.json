@@ -6,6 +6,7 @@
   "devDependencies": {
     "serverless-domain-manager": "^6.0.2",
     "serverless-dynamodb-local": "^0.2.40",
+    "serverless-plugin-warmup": "^7.1.0",
     "serverless-python-requirements": "^5.1.0",
     "serverless-wsgi": "^1.7.6"
   },

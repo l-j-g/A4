@@ -1,7 +1,7 @@
 {% extends "base.html" %}
 {% block content %}
     <h2> {{ page_data.page_title }}: </h2>
-    <p> If you already know the ticker of the company you are interested in enter it below. If you don't know the ticker, you can search for it in the tables below. </p>
+    <p> If you already know the ticker of the company you are interested in enter it below. </p>
 
     <form action="" method="post">
         <label for='ticker'>Ticker: </label>
@@ -9,6 +9,7 @@
         <input type="submit" value="Submit">
     </form>
     <br/>
+    <p>If you don't know the ticker, you can search for it in the tables below. </p>
 
     <h2>List of Tickers:</h2>
     <p> This is a list of companies currently tracked by ASX_DB. 
@@ -57,7 +58,9 @@
         <ul class="pagination">
             {% if session.page != 1 %}    
           <li class="page-item"><a class="page-link" href="#">Previous</a></li>
-          <li class="page-item"><a class="page-link" href="#">{{session.page}}</a></li>
+            {% for page in range(session.page-1) %}
+          <li class="page-item"><a class="page-link" href="#">{{page+1}}</a></li>
+            {% endfor %}
             {% endif %}
           <li class="page-item"><a class="page-link" href="/search/next">Next</a></li>
         </ul>
