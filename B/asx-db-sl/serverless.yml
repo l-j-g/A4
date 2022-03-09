@@ -26,17 +26,22 @@ custom:
       index: ['LastUpdatedIndex', 'MarketCapIndex', 'ListingDateIndex', 'GroupIndex', 'NameIndex', TickerIndex]
       read:
         minimum: 1    # Minimum read capacity
-        maximum: 20  # Maximum read capacity
+        maximum: 10  # Maximum read capacity
         usage: 0.75   # Target usage percentage
       write:
         minimum: 1    # Minimum write capacity
-        maximum: 20  # Maximum write capacity
+        maximum: 10 # Maximum write capacity
         usage: 0.75   # Target usage percentage
   customDomain:
     domainName: www.asx-db.com
     basePath: ''
     createRoute53Record: true
     autoDomain: true
+  warmup:
+    warmUpFlask:
+      enabled: false
+      prewarm: true
+
 
 provider:
   name: aws
@@ -69,6 +74,9 @@ package:
     - '!.dynamodb/**'
 functions:
   api:
+    warmup:
+      warmUpFlask:
+        enabled: true 
     handler: wsgi_handler.handler
     layers:
       - {Ref: PythonRequirementsLambdaLayer}
@@ -79,14 +87,14 @@ functions:
       - http:
           path: /{proxy+}
           method: ANY
-    warmup: true
   autoUpdate:
     handler: dev/dev.autoUpdate
     layers:
     - {Ref: PythonRequirementsLambdaLayer}
     events:
-      - schedule: cron(* * * * ? *)
+      - schedule: rate(2 minutes)
     memorySize: 512
+    timeout: 3
   init:
     handler: dev/dev.init
     layers:
@@ -124,8 +132,8 @@ resources:
           - AttributeName: ASX code
             KeyType: HASH
         ProvisionedThroughput:
-          ReadCapacityUnits: 5
-          WriteCapacityUnits: 5
+          ReadCapacityUnits: 2
+          WriteCapacityUnits: 2
 
         GlobalSecondaryIndexes:
             - IndexName: LastUpdatedIndex
@@ -137,8 +145,8 @@ resources:
               Projection:
                 ProjectionType: KEYS_ONLY
               ProvisionedThroughput:
-                ReadCapacityUnits: 1
-                WriteCapacityUnits: 1
+                ReadCapacityUnits: 2
+                WriteCapacityUnits: 2
 
             - IndexName: MarketCapIndex
               KeySchema:
@@ -154,8 +162,8 @@ resources:
                   - Company name
                   - Market Cap
               ProvisionedThroughput:
-                ReadCapacityUnits: 1
-                WriteCapacityUnits: 1
+                ReadCapacityUnits: 2
+                WriteCapacityUnits: 2
 
             - IndexName: ListingDateIndex 
               KeySchema:
@@ -171,8 +179,8 @@ resources:
                   - Company name
                   - Market Cap
               ProvisionedThroughput:
-                ReadCapacityUnits: 1
-                WriteCapacityUnits: 1
+                ReadCapacityUnits: 2
+                WriteCapacityUnits: 2
 
             - IndexName: GroupIndex
               KeySchema:
@@ -188,8 +196,8 @@ resources:
                   - Company name
                   - Market Cap
               ProvisionedThroughput:
-                ReadCapacityUnits: 1
-                WriteCapacityUnits: 1
+                ReadCapacityUnits: 2
+                WriteCapacityUnits: 2
 
             - IndexName: NameIndex
               KeySchema:
@@ -205,8 +213,8 @@ resources:
                   - Company name
                   - Market Cap
               ProvisionedThroughput:
-                ReadCapacityUnits: 1
-                WriteCapacityUnits: 1
+                ReadCapacityUnits: 2
+                WriteCapacityUnits: 2
 
             - IndexName: TickerIndex
               KeySchema:
@@ -222,7 +230,7 @@ resources:
                   - Company name
                   - Market Cap
               ProvisionedThroughput:
-                ReadCapacityUnits: 1
-                WriteCapacityUnits: 1
+                ReadCapacityUnits: 2
+                WriteCapacityUnits: 2
         TableName: ${self:custom.tableName}
 
