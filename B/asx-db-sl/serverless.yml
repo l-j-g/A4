@@ -94,6 +94,7 @@ functions:
           path: api/init/
           method: POST
           async: true
+          authorizer: aws_iam
     timeout: 600
 
 resources:
