@@ -8,7 +8,7 @@ plugins:
   - serverless-dynamodb-local # Run dynamodb locally
   - serverless-dynamodb-autoscaling # Auto scale Dynamodb by load
   - serverless-domain-manager # Deploy to custom domain name
-  - serverles-plugin-warmup # Prevent lambda cold starts
+  - serverless-plugin-warmup # Prevent lambda cold starts
 custom:
   tableName: 'tickers-table-${self:provider.stage}'
   wsgi:
