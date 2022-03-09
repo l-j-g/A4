@@ -64,9 +64,6 @@ def get_tickers(group='ticker', order='asc'):
             "listingDate": "Date Listed"
         }
     
-    for key in session:
-        print(key, session[key])
-
     for ticker in data['tickers']:
            ticker['Market Cap'] = locale.currency(ticker['Market Cap'], grouping=True)
 
@@ -108,7 +105,6 @@ def view_info(ticker):
            }
    )
   
-   print(response)
    headers = {
         "sector": "Sector:", 
         "industry": "Industry:",
@@ -137,7 +133,7 @@ def view_cash_flow(ticker):
         }
     )
 
-    cashflow = pd.DataFrame(response['Item']['CashFlow'])
+    cashflow = pd.DataFrame(response['Item']['Cash Flow'])
 
     data = {
         'page_title': 'Cash Flow',
@@ -153,7 +149,7 @@ def view_balance_sheet(ticker):
             'ASX code': ticker
         }
     )
-    balance_sheet = pd.DataFrame(response['Item']['BalanceSheet'])
+    balance_sheet = pd.DataFrame(response['Item']['Balance Sheet'])
     data = {
         'page_title': 'Balance Sheet',
         'ticker': response['Item'],
@@ -167,7 +163,7 @@ def view_income_statement(ticker):
             'ASX code': ticker
         }
     )
-    income_statement = pd.DataFrame(response['Item']['IncomeStatement'])
+    income_statement = pd.DataFrame(response['Item']['Income Statement'])
 
 
     data = {
@@ -209,7 +205,6 @@ def search(group, order, pageKey=None, limit=25):
         'ScanIndexForward': orderDict[order],
         'Limit': limit
     }
-    print(session)
 
     if 'LastEvaluatedKey' in session:
         if session['LastEvaluatedKey'] != 'NONE':
