@@ -3,11 +3,12 @@ service: asx-db-sl
 frameworkVersion: '3'
 
 plugins:
-  - serverless-wsgi
-  - serverless-python-requirements
-  - serverless-dynamodb-local
-  - serverless-dynamodb-autoscaling
-  - serverless-domain-manager
+  - serverless-wsgi # Web Server Gateway for Lambda
+  - serverless-python-requirements # Package requirements separately to lambda functions
+  - serverless-dynamodb-local # Run dynamodb locally
+  - serverless-dynamodb-autoscaling # Auto scale Dynamodb by load
+  - serverless-domain-manager # Deploy to custom domain name
+  - serverles-plugin-warmup # Prevent lambda cold starts
 custom:
   tableName: 'tickers-table-${self:provider.stage}'
   wsgi:
@@ -78,6 +79,7 @@ functions:
       - http:
           path: /{proxy+}
           method: ANY
+    warmup: true
   autoUpdate:
     handler: dev/dev.autoUpdate
     layers:
