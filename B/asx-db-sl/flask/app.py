@@ -12,6 +12,7 @@ from decimal import Decimal
 from boto3.dynamodb.conditions import Key
 import datetime
 import locale
+from functools import reduce
 
 
 
@@ -135,11 +136,15 @@ def view_cash_flow(ticker):
             'ASX code': ticker
         }
     )
+
+    cashflow = pd.DataFrame(response['Item']['CashFlow'])
+
     data = {
         'page_title': 'Cash Flow',
         'ticker': response['Item'],
     }
-    return render_template('cash_flow.html', page_data=data)
+
+    return render_template('cash_flow.html', page_data=data, tables=[cashflow.to_html(classes='data', header='true')])
 @app.route('/ticker/<string:ticker>/balance_sheet')
 def view_balance_sheet(ticker):
     ticker = ticker.upper()
@@ -148,11 +153,12 @@ def view_balance_sheet(ticker):
             'ASX code': ticker
         }
     )
+    balance_sheet = pd.DataFrame(response['Item']['BalanceSheet'])
     data = {
         'page_title': 'Balance Sheet',
         'ticker': response['Item'],
     }
-    return render_template('balance_sheet.html', page_data=data)
+    return render_template('balance_sheet.html', page_data=data, tables=[balance_sheet.to_html(classes='data', header='true')])
 @app.route('/ticker/<string:ticker>/income_statement')
 def view_income_statement(ticker):
     ticker = ticker.upper()
@@ -161,11 +167,14 @@ def view_income_statement(ticker):
             'ASX code': ticker
         }
     )
+    income_statement = pd.DataFrame(response['Item']['IncomeStatement'])
+
+
     data = {
         'page_title': 'Income Statement',
         'ticker': response['Item'],
     }
-    return render_template('income_statement.html', page_data=data)
+    return render_template('income_statement.html', page_data=data, tables=[income_statement.to_html(classes='data', header='true')])
 
 @app.errorhandler(404)
 def resource_not_found(e):
