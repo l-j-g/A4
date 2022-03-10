@@ -1,16 +1,8 @@
-import pdb
-from ast import Expression
 import os
 import boto3
 from flask import Flask, jsonify, make_response, render_template, request, session 
-import yahoo_fin.stock_info as si
-import yfinance as yf
-import pandas as pd
-from decimal import Decimal
-from boto3.dynamodb.conditions import Key
 import datetime
-import locale
-from functools import reduce
+import csv
 
 app = Flask(__name__)
 
@@ -34,14 +26,19 @@ for controller in registerable_controllers:
 
 
 @app.errorhandler(404)
-def resource_not_found(e):
-    return make_response(jsonify(error='Not found!'), 404)
+def handle_404(e):
+    return "Error 404: Page not found", 404
 
+@app.errorhandler(500)
+def handle_500(e):
+    return "Error 500: Internal Server Error", 500
+@app.errorhandler(403)
+def handle_403(e):
+    return "Error 403: Forbidden", 403
 
-'''
-#################################################
-# These Functions Are Used for Development only #
-#################################################
+#######################################################
+# These Functions Are Used for Local Development only #
+#######################################################
 @app.route('/update/<string:ticker>', methods=['POST'])
 def add(ticker):
 
@@ -143,4 +140,3 @@ def clean(data):
     data = data.astype('Int64')
     data = pd.DataFrame.to_dict(data)
     return(data)
-'''
