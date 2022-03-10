@@ -6,7 +6,7 @@ import datetime
 # H E L P E R S #
 #################
 
-def search_db(group, order, pageKey=None, limit=25):
+def search_db(group, order, page, limit=25):
     """ Search the table, returning results sorted by the group and order specified. 
 
     Args:
@@ -31,11 +31,9 @@ def search_db(group, order, pageKey=None, limit=25):
         'ScanIndexForward': orderDict[order],
         'Limit': limit
     }
-
-    if 'LastEvaluatedKey' in session:
-        if session['LastEvaluatedKey'] != 'NONE':
-            queryDict['ExclusiveStartKey'] = session['LastEvaluatedKey']
-
+    print(session)
+    if page != 1:
+        queryDict['ExclusiveStartKey'] = session['pageKey'][f'{page-1}']
 
     return table.query(**queryDict)
 

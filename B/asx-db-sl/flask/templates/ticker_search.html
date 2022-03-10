@@ -3,7 +3,7 @@
     <h2> {{ page_data.page_title }}: </h2>
     <p> If you already know the ticker of the company you are interested in enter it below. </p>
 
-    <form action="" method="post">
+    <form action="/ticker/" method="post">
         <label for='ticker'>Ticker: </label>
         <input type="text" name="ticker" placeholder="ASX Ticker">
         <input type="submit" value="Submit">
@@ -57,12 +57,12 @@
     <nav aria-label="Page navigation example">
         <ul class="pagination">
             {% if session.page != 1 %}    
-          <li class="page-item"><a class="page-link" href="#">Previous</a></li>
+          <li class="page-item"><a class="page-link" href="/search/{{session.page-1}}">Previous</a></li>
             {% for page in range(session.page-1) %}
-          <li class="page-item"><a class="page-link" href="#">{{page+1}}</a></li>
-            {% endfor %}
+          <li class="page-item"><a class="page-link" href="/search/{{page+1}}">{{page+1}}</a></li>
+            {% endfor %}  
             {% endif %}
-          <li class="page-item"><a class="page-link" href="/search/next">Next</a></li>
+          <li class="page-item"><a class="page-link" href="/search/{{session.page+1}}">Next</a></li>
         </ul>
       </nav>
 

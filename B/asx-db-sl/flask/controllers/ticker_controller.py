@@ -1,12 +1,19 @@
-from flask import Blueprint, render_template 
+from flask import Blueprint, render_template, request
 from helpers import get_item
 import pandas as pd
 
 ticker = Blueprint('ticker', __name__)
 
+
+@ticker.route('/ticker/', methods=['post'])
 @ticker.route('/ticker/<string:ticker>')
 @ticker.route('/ticker/<string:ticker>/info')
-def view_info(ticker):
+def view_info():
+
+   if request.method == 'POST':
+       ticker = request.form['ticker']
+       print(ticker)
+       
    ticker = ticker.upper()
    response = get_item(ticker)
   
