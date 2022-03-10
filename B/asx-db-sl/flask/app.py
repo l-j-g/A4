@@ -35,7 +35,7 @@ def handle_500(e):
 @app.errorhandler(403)
 def handle_403(e):
     return "Error 403: Forbidden", 403
-
+'''
 #######################################################
 # These Functions Are Used for Local Development only #
 #######################################################
@@ -140,3 +140,4 @@ def clean(data):
     data = data.astype('Int64')
     data = pd.DataFrame.to_dict(data)
     return(data)
+'''

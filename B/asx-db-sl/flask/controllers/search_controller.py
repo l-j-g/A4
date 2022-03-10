@@ -1,7 +1,7 @@
 from flask import Blueprint, render_template, session, redirect, url_for
 import locale 
-from helpers import search_db, get_time
-
+from helpers import search_db, get_time 
+import simplejson as json
 search = Blueprint('search', __name__)
 locale.setlocale( locale.LC_ALL, '' )
 
@@ -15,7 +15,7 @@ def get_tickers(group='ticker', order='asc'):
     session['pageKey'] = {}
 
     response = search_db(group, order, session['page'])
-    session['LastEvaluatedKey'] = response.get('LastEvaluatedKey')
+
     session['pageKey'][session['page']] = response.get('LastEvaluatedKey')
     
 
@@ -37,13 +37,13 @@ def get_tickers(group='ticker', order='asc'):
 
     return render_template("ticker_search.html", page_data=data, headers=headers, session=session)
 
-@search.route('/search/<int:page>')
+@search.route('/search/<string:page>')
 def get_tickers_page(page):
     try:
-        session['page']= page
+        session['page']= int(page)
         response = search_db(session['group'], session['order'], page)
+        print(response.get('LastEvaluatedKey'))
         session['pageKey'][page] = response.get('LastEvaluatedKey')
-        #session['LastEvaluatedKey'] = response.get('LastEvaluatedKey')
         data = {
             "page_title": "Search Ticker",
             'tickers': response['Items'],
@@ -64,6 +64,7 @@ def get_tickers_page(page):
     except Exception as e:
         print(e)
         return redirect('/search/')
+'''
 @search.route('/search/next')
 def get_next_tickers():
 
@@ -85,4 +86,4 @@ def get_next_tickers():
     }
 
     return render_template("ticker_search.html", page_data=data, headers=headers, session=session)
-    
+''' 

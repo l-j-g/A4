@@ -31,10 +31,8 @@ def search_db(group, order, page, limit=25):
         'ScanIndexForward': orderDict[order],
         'Limit': limit
     }
-    print(session)
     if page != 1:
-        queryDict['ExclusiveStartKey'] = session['pageKey'][f'{page-1}']
-
+        queryDict['ExclusiveStartKey'] = session['pageKey'][f'{int(page)-1}']
     return table.query(**queryDict)
 
 def get_time():

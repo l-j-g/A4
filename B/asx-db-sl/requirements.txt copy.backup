@@ -13,12 +13,11 @@ Flask==1.1.4
 idna==3.3
 importlib-metadata==4.11.2
 itsdangerous==1.1.0
-Jinja2==2.11.3
 jmespath==0.10.0
 lxml==4.8.0
 MarkupSafe==2.0.1
 multitasking==0.0.10
-numpy==1.22.3
+numpy==1.22.2
 pandas==1.4.1
 parse==1.19.0
 pyee==8.2.2
@@ -30,7 +29,6 @@ requests==2.27.1
 requests-html==0.10.0
 s3transfer==0.5.2
 sgmllib3k==1.0.0
-simplejson==3.17.6
 six==1.16.0
 soupsieve==2.3.1
 tqdm==4.63.0
@@ -41,3 +39,4 @@ Werkzeug==1.0.1
 yahoo-fin==0.8.9.1
 yfinance==0.1.70
 zipp==3.7.0
+Jinja2>=2.10.1

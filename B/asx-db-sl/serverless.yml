@@ -105,6 +105,7 @@ functions:
           method: POST
           async: true
           authorizer: aws_iam
+    memorySize: 512
     timeout: 600
 
 resources:
