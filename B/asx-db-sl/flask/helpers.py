@@ -2,11 +2,12 @@ from flask import session
 from app import table
 from boto3.dynamodb.conditions import Key
 import datetime
+import pandas
 #################
 # H E L P E R S #
 #################
 
-def search_db(group, order, page, limit=25):
+def search_db(group, order, page, filters=None, limit=25):
     """ Search the table, returning results sorted by the group and order specified. 
 
     Args:
@@ -46,3 +47,35 @@ def get_item(ticker):
            }
    )
    return(response)
+
+def get_table(data):
+
+    df = pd.DataFrame(data)
+
+    custom_styles = [
+        hover(),
+        dict(selector="th", props=[("font-size", "100%"),
+                                ("text-align", "left")]),
+        dict(selector="caption", props=[("caption-side", "bottom")]),
+    ]   
+    table = df.style.set_properties(**{'max-width': '500px', 'font-size': '10pt'}) \
+        .highlight_null(null_color='red') \
+        .set_table_attributes('class="table"') \
+        .set_table_styles(custom_styles) \
+        .render() 
+    return table
+
+
+
+def color_negative_red(val):
+    """
+    Takes a scalar and returns a string with
+    the css property `'color: red'` for negative
+    strings, black otherwise.
+    """
+    color = 'red' if val < 0 else 'black'
+    return 'color: %s' % color
+
+def hover(hover_color="#ffff99"):
+    return dict(selector="tr:hover",
+                props=[("background-color", "%s" % hover_color)])
