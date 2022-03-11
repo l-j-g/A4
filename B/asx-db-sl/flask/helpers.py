@@ -2,7 +2,7 @@ from flask import session
 from app import table
 from boto3.dynamodb.conditions import Key
 import datetime
-import pandas
+import pandas as pd
 #################
 # H E L P E R S #
 #################

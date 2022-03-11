@@ -31,7 +31,7 @@ def view_info(ticker=None):
             'page_title': 'Ticker Details',
             'ticker': response['Item'],
         } 
-        return(render_template('info.html', page_data=data, headers=headers))
+        return render_template('info.html', page_data=data, headers=headers)
     except:
        flash('Sorry, we could not find the ticker you requested. Try Again', 'error')
        return redirect('/search')
@@ -40,37 +40,36 @@ def view_info(ticker=None):
 def view_cash_flow(ticker):
     ticker = ticker.upper()
     response = get_item(ticker)
-    df_html = get_table(response)
+    table = get_table(response['Item']['Cash Flow'])
 
     data ={
         'page_title': 'Cash Flow',
         'ticker': response['Item']
     }
 
-    return render_template('cash_flow.html', page_data=data, table=df_html)
+    return render_template('cash_flow.html', page_data=data, table=table)
 
 @ticker.route('/ticker/<string:ticker>/balance_sheet')
 def view_balance_sheet(ticker):
     ticker = ticker.upper()
     response = get_item(ticker)
-    balance_sheet = pd.DataFrame(response['Item']['Balance Sheet'])
+    table = get_table(response['Item']['Balance Sheet'])
     
     data = {
         'page_title': 'Balance Sheet',
         'ticker': response['Item'],
     }
-    return render_template('balance_sheet.html', page_data=data, tables=[balance_sheet.to_html(classes='data', header='true')])
+    return render_template('balance_sheet.html', page_data=data, table=table)
 
 @ticker.route('/ticker/<string:ticker>/income_statement')
 def view_income_statement(ticker):
     ticker = ticker.upper()
-
     response = get_item(ticker)
+    table = get_table(response['Item']['Income tatement'])
     
-    income_statement = pd.DataFrame(response['Item']['Income Statement'])
 
     data = {
         'page_title': 'Income Statement',
         'ticker': response['Item'],
     }
-    return render_template('income_statement.html', page_data=data, tables=[income_statement.to_html(classes='data', header='true')])
+    return render_template('income_statement.html', page_data=data, table=table)
