@@ -42,7 +42,33 @@ def get_tickers_page(page):
     try:
         session['page']= int(page)
         response = search_db(session['group'], session['order'], page)
-        print(response.get('LastEvaluatedKey'))
+        session['pageKey'][page] = response.get('LastEvaluatedKey')
+        data = {
+            "page_title": "Search Ticker",
+            'tickers': response['Items'],
+        }
+
+        headers = {
+                "ticker": "Tickers",
+                "companyName": "Company Name",
+                "group": "Category",
+                "marketCap": "Market Capitalization",
+                "listingDate": "Date Listed"
+            }
+    
+        for ticker in data['tickers']:
+            ticker['Market Cap'] = locale.currency(ticker['Market Cap'], grouping=True)
+
+        return render_template("ticker_search.html", page_data=data, headers=headers, session=session) 
+    except Exception as e:
+        print(e)
+        return redirect('/search/')
+
+@search.route('/search/<string:page>/filters=<string:query>')
+def get_filtered_tickers_page(page):
+    try:
+        session['page']= int(page)
+        response = search_db(session['group'], session['order'], page)
         session['pageKey'][page] = response.get('LastEvaluatedKey')
         data = {
             "page_title": "Search Ticker",
