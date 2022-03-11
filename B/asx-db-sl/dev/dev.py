@@ -13,33 +13,39 @@ import concurrent.futures
 # V A R I A B L E S #
 #####################
 
+# Use logging to print messages to the console
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
 
+# create a dynamodb resource
 dynamodb = boto3.resource('dynamodb')
 
+# Allows offline testing
 if os.environ.get('IS_OFFLINE'):
     dynamodb = boto3.resource('dynamodb', region_name='localhost', endpoint_url='http://localhost:8000')
 
 TICKERS_TABLE = os.environ['TICKERS_TABLE']
 table = dynamodb.Table(os.environ['TICKERS_TABLE'])
-current_time = datetime.datetime.utcnow().isoformat()
 
 #################
 # H E L P E R S #
 #################
 
 def clean(data):
+    ''' Convert NaN to 0 and convert to int '''
     data.columns = data.columns.astype(str)
     data = data.fillna(0)
     data = data.astype('float')
     data = data.astype('Int64')
     data = pd.DataFrame.to_dict(data)
     return(data)
+# Get the current time
 def get_time():
+    ''' Get the current time '''
     current_time = datetime.datetime.utcnow().isoformat()
     return current_time
 def get_info(ticker):
+    ''' Fetch info from yahoo finance'''
     try:
         info = pd.DataFrame.to_dict(si.get_company_info(ticker))
         info = info['Value']
@@ -48,6 +54,7 @@ def get_info(ticker):
         info = "N/A"
     return info
 def get_cash_flow(ticker):
+    ''' Fetch cash flow from yahoo finance'''
     try:
         cash_flow = clean(si.get_cash_flow(ticker))
     except: 
@@ -55,6 +62,7 @@ def get_cash_flow(ticker):
         cash_flow = "N/A"
     return cash_flow
 def get_income_statement(ticker):
+    ''' Fetch income statement from yahoo finance'''
     try:
         income_statement = clean(si.get_income_statement(ticker))
     except:
@@ -63,6 +71,7 @@ def get_income_statement(ticker):
     return income_statement
     
 def get_balance_sheet(ticker):
+    ''' Fetch balance sheet from yahoo finance'''
     try:
         balance_sheet = clean(si.get_balance_sheet(ticker))
     except:
@@ -70,6 +79,7 @@ def get_balance_sheet(ticker):
         balance_sheet = "N/A"
     return balance_sheet
 def try_int(data):
+    ''' Convert to int if possible '''
     try:
         data = int(data)
     except:
@@ -81,8 +91,8 @@ def try_int(data):
 #####################
 
 def autoUpdate(event, context):
-
-    # Get the last updated entry from the database and return the 'ASX code'.
+    ''' Fetch the oldest data in the database and update it, called by a cron job '''
+    # Find the oldest data in the database
     response = table.query(
         IndexName = 'LastUpdatedIndex',
         KeyConditionExpression = Key('GSI1PK').eq('TICKERS'), 
@@ -92,8 +102,8 @@ def autoUpdate(event, context):
     ticker = response['Items'][0]['ASX code']
     ticker = ticker + '.AX'
 
-    # Get info, cash flow, income statement and balance sheet for the ticker using threading
     logger.info(f"Fetching data for {ticker}...")
+    # Use threading to reduce lambda execution time whilst waiting for requests to complete
     with concurrent.futures.ThreadPoolExecutor(max_workers=4) as executor: 
         future_info = executor.submit(get_info, ticker)
         future_cash_flow = executor.submit(get_cash_flow, ticker)
@@ -132,6 +142,7 @@ def autoUpdate(event, context):
     return({"status": "updated"})
 
 def init(event, context):
+    ''' Initialise the database with basic market cap, ticker, group data'''
     
     with open('./ASX_Listed_Companies_24-02-2022_09-03-57_AEDT.csv', newline='') as csvfile:
         tickers_list = csv.reader(csvfile, delimiter=',')
