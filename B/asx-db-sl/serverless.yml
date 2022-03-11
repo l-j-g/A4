@@ -18,12 +18,12 @@ custom:
       migrate: true
     stages:
       - dev
-  pythonRequirements:
+  pythonRequirements: # Package python requirements into a separate lambda layer to overcome size limits
     dockerizePip: non-linux
     layer: true
   capacities:
     - table: TickersTable # Dynamodb Resource
-      index: ['LastUpdatedIndex', 'MarketCapIndex', 'ListingDateIndex', 'GroupIndex', 'NameIndex', TickerIndex]
+      index: ['LastUpdatedIndex', 'MarketCapIndex', 'ListingDateIndex', 'GroupIndex', 'NameIndex', TickerIndex] # Indexes allows sorting data
       read:
         minimum: 1    # Minimum read capacity
         maximum: 10  # Maximum read capacity

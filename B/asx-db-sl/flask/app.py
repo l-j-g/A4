@@ -4,7 +4,7 @@ from flask import Flask, jsonify, make_response, render_template, request, sessi
 import datetime
 import csv
 
-development = True
+development = False
 if development == True:
     import os
     import boto3
@@ -17,27 +17,34 @@ if development == True:
     from threading import Thread
     import concurrent.futures
 
+# Create an instance of Flask
 app = Flask(__name__)
 
+# Set the secret key to some random bytes. 
 SECRET_KEY = os.urandom(12)
+# Used to store user cookies
 app.secret_key = SECRET_KEY
-#dynamodb_client = boto3.client('dynamodb')
 
 dynamodb = boto3.resource('dynamodb')
 
+# This allows for local testing of the app without having to run the server
 if os.environ.get('IS_OFFLINE'):
    # dynamodb_client = boto3.client('dynamodb', region_name='localhost', endpoint_url='http://localhost:8000')
     dynamodb = boto3.resource('dynamodb', region_name='localhost', endpoint_url='http://localhost:8000')
 
 
+# The name of the table in DynamoDB - set in serverless YAML
 TICKERS_TABLE = os.environ['TICKERS_TABLE']
+# Use DynamoDB as a resource 
 table = dynamodb.Table(os.environ['TICKERS_TABLE'])
 
+# Register controller to make the code more readable and modular 
 from controllers import registerable_controllers
 for controller in registerable_controllers:
     app.register_blueprint(controller)
 
 
+# Routes for basic error handling: 
 @app.errorhandler(404)
 def handle_404(e):
     return "Error 404: Page not found", 404
@@ -49,6 +56,7 @@ def handle_500(e):
 def handle_403(e):
     return "Error 403: Forbidden", 403
 
+# The below functions are used to test the app locally -> they are implemented in the dev.py function
 if development: 
     #######################################################
     # These Functions Are Used for Local Development only #
@@ -93,15 +101,11 @@ if development:
     @app.route('/test', methods=['POST'])
     def test():
         # Fetch the oldest entry from the database and return the 'ASX code'.
-
-
         ticker = '88E.AX'
         info = pd.DataFrame.to_dict(si.get_company_info(ticker))
         info = info['Value']
 
         return info
-
-
 
     @app.route('/init', methods=['POST'])
     # initialize the database with basic data from all companies listed on the asx

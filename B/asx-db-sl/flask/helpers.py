@@ -3,6 +3,7 @@ from app import table
 from boto3.dynamodb.conditions import Key
 import datetime
 import pandas as pd
+
 #################
 # H E L P E R S #
 #################
@@ -15,6 +16,7 @@ def search_db(group, order, page, filters=None, limit=25):
         sortOrder (bool): True for Ascending, False for Descending
         limit (int): number of items to return
     """
+    # These dictionaries translate user input into the correct format for the query
     groupDict = {
         'ticker': 'TickerIndex',
         'marketCap': 'MarketCapIndex',
@@ -37,19 +39,21 @@ def search_db(group, order, page, filters=None, limit=25):
     return table.query(**queryDict)
 
 def get_time():
+    '''Gets the current time'''
     current_time = datetime.datetime.utcnow().isoformat()
     return current_time
 
 def get_item(ticker):
-   response = table.get_item(
+    ''' Retrieves all avaliable data for a given ticker'''
+    response = table.get_item(
        Key={
            'ASX code': ticker
            }
    )
-   return(response)
+    return(response)
 
 def get_table(data):
-
+    """ Takes a dataframe and returns a styled HTML table. """
     df = pd.DataFrame(data)
 
     custom_styles = [
@@ -77,5 +81,6 @@ def color_negative_red(val):
     return 'color: %s' % color
 
 def hover(hover_color="#ffff99"):
+    """Creates hover style for table cells"""
     return dict(selector="tr:hover",
                 props=[("background-color", "%s" % hover_color)])

@@ -1,5 +1,4 @@
-from flask import Blueprint, jsonify, request, render_template, redirect, url_for
-from app import table
+from flask import Blueprint, render_template 
 
 home = Blueprint('home', __name__)
 
