@@ -12,7 +12,7 @@ plugins:
 custom:
   tableName: 'tickers-table-${self:provider.stage}'
   wsgi:
-    app: flask/app.app
+    app: flaskApp/app.app
   dynamodb:
     start:
       migrate: true

@@ -1,9 +1,21 @@
 from flask import session
-from app import table
 from boto3.dynamodb.conditions import Key
 import datetime
 import pandas as pd
+import boto3
+import os 
 
+
+dynamodb = boto3.resource('dynamodb')
+
+# This allows for local testing of the app without having to run the server
+if os.environ.get('IS_OFFLINE'):
+   # dynamodb_client = boto3.client('dynamodb', region_name='localhost', endpoint_url='http://localhost:8000')
+    dynamodb = boto3.resource('dynamodb', region_name='localhost', endpoint_url='http://localhost:8000')
+
+TICKERS_TABLE = os.environ['TICKERS_TABLE']
+# Use DynamoDB as a resource 
+table = dynamodb.Table(os.environ['TICKERS_TABLE'])
 #################
 # H E L P E R S #
 #################

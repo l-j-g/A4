@@ -180,3 +180,11 @@ For additional local development capabilities of `serverless-wsgi` and `serverle
 - Threading is used to speed up (4x) the execution time of scraping Info, Cash flow, Balance sheet and Income statement
 - Custom pagination is implemented to allow for pagination (forward and reverse of the data) 
 
+## Error Testing:
+
+
+AWS Cloudwatch 
+Logging of commands executed by the Lambda function
+` serverless logs -f api -t`
+` serverless logs -f autoUpdate -t`
+` serverless logs -f init -t`

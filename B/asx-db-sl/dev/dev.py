@@ -142,7 +142,11 @@ def autoUpdate(event, context):
     return({"status": "updated"})
 
 def init(event, context):
-    ''' Initialise the database with basic market cap, ticker, group data'''
+    '''
+    Initialise the database with basic market cap, ticker, group data
+    This function can only be executed via a POST request with AWS_IAM credentials
+    '''
+    
     
     with open('./ASX_Listed_Companies_24-02-2022_09-03-57_AEDT.csv', newline='') as csvfile:
         tickers_list = csv.reader(csvfile, delimiter=',')
