@@ -6,6 +6,8 @@ description: 'This is a Python Flask API service backed by DynamoDB running on A
 
 # ASX DB - A Python Flask Web application running on AWS Lambda and backed by DynamoDB.
 
+Deployed at https://www.asx-db.com/
+
 This is a cloud native web application that stores financial information (Information, Cash flow, Balance sheet and Income statement) for companies that are listed on the Australian Stock Exchange. It it has been designed to be scalable and reliable whilst incurring minimal hosting fees.
 
 This application demonstrates full stack cloud native development and has been built using:
@@ -49,6 +51,11 @@ Further monitoring can be observed via AWS CloudWatch. Logs can be viewed with t
 ` serverless logs -f api -t`
 ` serverless logs -f autoUpdate -t`
 ` serverless logs -f init -t`
+
+![AutoUpdateLog](../../A/imgs/log.png)
+
+Example log of autoUpdate function indicating that the function has been executed successfully and the execution time.
+
 
 ## Installation
 

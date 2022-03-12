@@ -49,7 +49,8 @@ Further monitoring can be observed via AWS CloudWatch. Logs can be viewed with t
 ` serverless logs -f api -t`
 ` serverless logs -f autoUpdate -t`
 ` serverless logs -f init -t`
-
+ 
+                 
 ## Installation
 
 ### Prerequisites
