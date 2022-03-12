@@ -1,28 +1,59 @@
 <!--
 title: 'Serverless Framework Python Flask API backed by DynamoDB on AWS'
-description: 'This template demonstrates how to develop and deploy a simple Python Flask API service backed by DynamoDB running on AWS Lambda using the traditional Serverless Framework.'
-layout: Doc
-framework: v3
-platform: AWS
-language: Python
-priority: 2
-authorLink: 'https://github.com/serverless'
-authorName: 'Serverless, inc.'
-authorAvatar: 'https://avatars1.githubusercontent.com/u/13742415?s=200&v=4'
+description: 'This is a Python Flask API service backed by DynamoDB running on AWS Lambda using Serverless framework \
+
 -->
 
-# Serverless Framework Python Flask API service backed by DynamoDB on AWS
+# ASX DB - A Python Flask Web application runnning on AWS Lambda and backed by DynamoDB.
 
-This template demonstrates how to develop and deploy a simple Python Flask API service, backed by DynamoDB, running on AWS Lambda using the traditional Serverless Framework.
+This is a cloud native web application that stores financial information (Information, Cash flow, Balance sheet and Income statement) for companies that are listed on the Australian Stock Exchange. It it has been designed to be scalable and reliable whilst incurring minimal hosting fees.
 
+This application demonstrates full stack cloud native development and has been built using:
+
+- Serverless Framework
+- AWS Lambda
+- AWS DynamoDB (NoSQL)
+- Flask - Python Web Framework
+- Jinja2 - Python Templating Library
+- Pandas - Python Data Analysis Library
+
+## Features 
+
+- Cloud native, serverless application that is scalable, reliable, easy to deploy and cheap
+- Uses AWS Lambda, DynamoDB, and Flask to provide a REST-Like API
+- An API Key is used to authorise a function to initialise database for all 2,000+ tickers listed on the ASX.
+- Information, Cash Flow, Balance Sheet and Income Statement is stored for each ticker.
+- Lambda functions are automatcially kept warm to prevent cold starts. 
+- Fresh data is automatically scraped via cron job every 2 minutes to update tye oldest data in the database.
+- 6 Global Secondary Indexes enables the database to be sorted by Ticker, Name, Market Cap, Date Listed, GICs Group and Date Updated.
+- Threading is used to speed up (4x) the execution time of scraping Info, Cash flow, Balance sheet and Income statement
+- Custom pagination is implemented to allow for pagination (forward and reverse of the data) 
 
 ## Anatomy of the template
 
-This template configures a single function, `api`, which is responsible for handling all incoming requests thanks to configured `http` events. To learn more about `http` event configuration options, please refer to [http event docs](https://www.serverless.com/framework/docs/providers/aws/events/apigateway/). As the events are configured in a way to accept all incoming requests, `Flask` framework is responsible for routing and handling requests internally. The implementation takes advantage of `serverless-wsgi`, which allows you to wrap WSGI applications such as Flask apps. To learn more about `serverless-wsgi`, please refer to corresponding [GitHub repository](https://github.com/logandk/serverless-wsgi). The template also relies on `serverless-python-requirements` plugin for packaging dependencies from `requirements.txt` file. For more details about `serverless-python-requirements` configuration, please refer to corresponding [GitHub repository](https://github.com/UnitedIncome/serverless-python-requirements).
+This application includes three functions, the `api` function (./flaskApp/app.py) is responsible handling all incoming requests by configured `http` events. The `Flask` framework is responsible for routing and handling requests internally. The implementation takes advantage of `serverless-wsgi`, which allows you to wrap WSGI applications such as Flask apps. 
 
-Additionally, the template also handles provisioning of a DynamoDB database that is used for storing data about users. The Flask application exposes two endpoints, `POST /users` and `GET /user/{userId}`, which allow to create and retrieve users.
+The application also provisions a NoSQL DynamoDB database that stores financial data for all companies that are listed on the Australian Stock Exchange. The database is configured to autoscale according to load and has 6 additional Global Secondary Indexes to allow sorting of the data. 
 
-## Usage
+The `autoUpdate` function (./dev/dev.py) is configured to execute automatically every two minutes. First it retrieves the oldest data from the database, then requests new information, cash flow, income statement and balance sheet information from Yahoo and updates the new data in the database. These requests are made concurrentlly - to minimise execution time.
+
+The `init` function (./dev/dev.py) initialises the database with basic information (ticker, company name, market cap and listing date). As a security measure it can only be called via a POST request that has been authorised via AWS IAM. 
+
+## Error Testing:
+
+For local testing, UnitTesting is provided in the file `./flaskApp/test_app.py`, To execute correctly it will require both `serverless wsgi serve` and `serverless dynamodb start` to be services to be running. 
+
+Further manual testing can be done via executing a post request to either `http://localhost:5000/init` or `http://localhost:5000/update/<ticker>`
+
+Further monitoring can be observed via AWS CloudWatch. Logs can be viewed with the commands: 
+` serverless logs -f api -t`
+` serverless logs -f autoUpdate -t`
+` serverless logs -f init -t`
+
+
+
+
+## Installation
 
 ### Prerequisites
 
@@ -32,8 +63,6 @@ In order to package your dependencies locally with `serverless-python-requiremen
 python3.8 -m venv ./venv
 source ./venv/bin/activate
 ```
-
-Alternatively, you can also use `dockerizePip` configuration from `serverless-python-requirements`. For details on that, please refer to corresponding [GitHub repository](https://github.com/UnitedIncome/serverless-python-requirements).
 
 ### Deployment
 
@@ -54,60 +83,13 @@ npm install
 and then perform deployment with:
 
 ```
-serverless deploy
+serverless deploy 
 ```
 
-After running deploy, you should see output similar to:
-
-```bash
-Deploying aws-python-flask-dynamodb-api-project to stage dev (us-east-1)
-
-✔ Service deployed to stack aws-python-flask-dynamodb-api-project-dev (182s)
-
-endpoints:
-  ANY - https://xxxxxxxxxx.execute-api.us-east-1.amazonaws.com/dev/
-  ANY - https://xxxxxxxxxx.execute-api.us-east-1.amazonaws.com/dev/{proxy+}
-functions:
-  api: aws-python-flask-dynamodb-api-project-dev-api (1.5 MB)
-```
-
-_Note_: In current form, after deployment, your API is public and can be invoked by anyone. For production deployments, you might want to configure an authorizer. For details on how to do that, refer to [http event docs](https://www.serverless.com/framework/docs/providers/aws/events/apigateway/).
-
-### Invocation
-
-After successful deployment, you can create a new user by calling the corresponding endpoint:
-
-```bash
-curl --request POST 'https://xxxxxx.execute-api.us-east-1.amazonaws.com/dev/users' --header 'Content-Type: application/json' --data-raw '{"name": "John", "userId": "someUserId"}'
-```
-
-Which should result in the following response:
-
-```bash
-{"userId":"someUserId","name":"John"}
-```
-
-You can later retrieve the user by `userId` by calling the following endpoint:
-
-```bash
-curl https://xxxxxxx.execute-api.us-east-1.amazonaws.com/dev/users/someUserId
-```
-
-Which should result in the following response:
-
-```bash
-{"userId":"someUserId","name":"John"}
-```
-
-If you try to retrieve user that does not exist, you should receive the following response:
-
-```bash
-{"error":"Could not find user with provided \"userId\""}
-```
 
 ### Local development
 
-Thanks to capabilities of `serverless-wsgi`, it is also possible to run your application locally, however, in order to do that, you will need to first install `werkzeug`, `boto3` dependencies, as well as all other dependencies listed in `requirements.txt`. It is recommended to use a dedicated virtual environment for that purpose. You can install all needed dependencies with the following commands:
+It is also possible to run your application locally, however, in order to do that, you will need to first install `werkzeug`, `boto3` dependencies, as well as all other dependencies listed in `requirements.txt`. It is recommended to use a dedicated virtual environment for that purpose. You can install all needed dependencies with the following commands:
 
 ```bash
 pip install werkzeug boto3
@@ -121,35 +103,6 @@ serverless plugin install -n serverless-dynamodb-local
 serverless dynamodb install
 ```
 
-It will add the plugin to `devDependencies` in `package.json` file as well as to `plugins` section in `serverless.yml`. Additionally, it will also install DynamoDB locally.
-
-You should also add the following config to `custom` section in `serverless.yml`:
-
-
-```yml
-custom:
-  (...)
-  dynamodb:
-    start:
-      migrate: true
-    stages:
-      - dev
-```
-
-Additionally, we need to reconfigure DynamoDB Client to connect to our local instance of DynamoDB. We can take advantage of `IS_OFFLINE` environment variable set by `serverless-wsgi` plugin and replace:
-
-
-```python
-dynamodb_client = boto3.client('dynamodb')
-```
-
-with
-
-```python
-dynamodb_client = boto3.client('dynamodb')
-
-if os.environ.get('IS_OFFLINE'):
-    dynamodb_client = boto3.client('dynamodb', region_name='localhost', endpoint_url='http://localhost:8000')
 ```
 
 Now you can start DynamoDB local with the following command:
@@ -164,27 +117,7 @@ At this point, you can run your application locally with the following command:
 serverless wsgi serve
 ```
 
-For additional local development capabilities of `serverless-wsgi` and `serverless-dynamodb-local` plugins, please refer to corresponding GitHub repositories:
-- https://github.com/logandk/serverless-wsgi 
-- https://github.com/99x/serverless-dynamodb-local
-
-## Features 
-
-- Cloud native, serverless application that is scalable, reliable, easy to deploy and cheap
-- Uses AWS Lambda, DynamoDB, and Flask to provide a REST-Like API
-- An API Key is used to authorise a function to initialise database for all 2,000+ tickers listed on the ASX.
-- Information, Cash Flow, Balance Sheet and Income Statement stored for each ticker.
-- Fresh data is scraped via cron job every 2 minutes for the oldest ticker data in the database.
-- 6 Global Secondary Indexes enables the database to be sorted by Ticker, Name, Market Cap, Date Listed, GICs Group and Date Updated.
-- A single DynamoDB table is used to store all data. 
-- Threading is used to speed up (4x) the execution time of scraping Info, Cash flow, Balance sheet and Income statement
-- Custom pagination is implemented to allow for pagination (forward and reverse of the data) 
-
-## Error Testing:
 
 
-AWS Cloudwatch 
-Logging of commands executed by the Lambda function
-` serverless logs -f api -t`
-` serverless logs -f autoUpdate -t`
-` serverless logs -f init -t`
+
+
