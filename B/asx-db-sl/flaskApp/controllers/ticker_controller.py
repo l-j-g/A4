@@ -4,16 +4,17 @@ from helpers import get_item, hover, get_table
 ticker = Blueprint('ticker', __name__)
 
 # View to display information about a given ticker
+
+@ticker.route('/ticker/', methods=['GET'])
 @ticker.route('/ticker/', methods=['POST']) # Handles POST requests from the search page
 @ticker.route('/ticker/<string:ticker>') #  When a ticker is passed in the URL
 @ticker.route('/ticker/<string:ticker>/info') #  The 'info' page is the default page
 def view_info(ticker=None):
     if request.method == 'POST':
         ticker = request.form['ticker']
-    ticker = ticker.upper()
     try: # Try to get the ticker from the database
         response = get_item(ticker)
-  
+        ticker = ticker.upper()
         # Translate data from db to titles
         headers = {
                 "sector": "Sector:", 
