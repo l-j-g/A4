@@ -4,7 +4,7 @@ from flask import Flask, jsonify, make_response, render_template, request, sessi
 import datetime
 import csv
 
-development = False
+development = True 
 
 # Create an instance of Flask
 app = Flask(__name__)

@@ -114,7 +114,7 @@ Working as intended, displays either home page or search page.
 
 - Info/Cash Flow/Income Statement/Balancesheet
     - Database data is displayed in tabular forms
-    - BUG: The table columns are not always in the correct order e.g. 2018, 2019, 2021, 2020
+    - BUG: The table columns are not always in the correct order e.g. 2018, 2019, 2021, 2020 **Fixed 12/03**
 
 ## Installation
 

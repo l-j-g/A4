@@ -67,6 +67,7 @@ def get_item(ticker):
 def get_table(data):
     """ Takes a dataframe and returns a styled HTML table. """
     df = pd.DataFrame(data)
+    df = df.reindex(columns=sorted(df.columns))
 
     custom_styles = [
         hover(),
