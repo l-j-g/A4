@@ -68,19 +68,23 @@ def get_table(data):
     """ Takes a dataframe and returns a styled HTML table. """
     df = pd.DataFrame(data)
     df = df.reindex(columns=sorted(df.columns))
+    df = df.astype('int64')
+    df.loc['Total'] = df.sum()
 
     custom_styles = [
         hover(),
         dict(selector="th", props=[("font-size", "100%"),
-                                ("text-align", "left")]),
+                                ("text-align", "right")]),
         dict(selector="caption", props=[("caption-side", "bottom")]),
     ]   
-    table = df.style.set_properties(**{'max-width': '500px', 'font-size': '10pt'}) \
+    table = df.style.set_properties(**{'max-width': '500px', 'font-size': '10pt', 'text-align': 'right'}) \
         .highlight_null(null_color='red') \
-        .set_table_attributes('class="table"') \
-        .set_table_styles(custom_styles) \
-        .render() 
+        .set_table_attributes('class="table table-hover table-striped table-border w-auto"') \
+        .set_table_styles(custom_styles, overwrite=True) \
+        .to_html()
     return table
+
+        #.bar(color=['red', 'green'], align='left', height=50, width=25, axis=0, props='width: 120px; border-right:1px solid black;') \
 
 
 
