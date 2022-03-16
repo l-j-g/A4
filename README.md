@@ -53,7 +53,7 @@ Further monitoring can be observed via AWS CloudWatch. Logs can be viewed with t
 ` serverless logs -f autoUpdate -t`
 ` serverless logs -f init -t`
 
-![AutoUpdateLog](../../A/imgs/log.png)
+![AutoUpdateLog](./A/imgs/log.png)
 
 Example log of autoUpdate function indicating that the function has been executed successfully and the execution time.
 ### Manual Application Testing 
