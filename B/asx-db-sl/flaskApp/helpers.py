@@ -91,6 +91,7 @@ def get_table(data):
         .highlight_null(null_color='red') \
         .set_table_attributes('class="table table-hover table-striped table-border w-auto"') \
         .set_table_styles(custom_styles, overwrite=True) \
+        .format('${0:,.0f}') \
         .to_html()
     return table
 
