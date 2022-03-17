@@ -1,4 +1,5 @@
 import os
+import boto3
 from flask import Flask, jsonify, make_response, render_template, request, session, send_from_directory
 import datetime
 import csv 
@@ -30,7 +31,7 @@ def handle_500(e):
 def handle_403(e):
     return "Error 403: Forbidden", 403
 
-@app.route(/favicon.ico)
+@app.route('/favicon.ico')
 def favicon():
     return send_from_directory(os.path.join(app.root_path, 'static'), 'favicon.ico', mimetype='image/vnd.microsoft.icon')
 
@@ -41,6 +42,10 @@ if development:
     import pandas as pd
     import csv 
     import datetime
+    import logging
+    from boto3.dynamodb.conditions import Key
+    from threading import Thread
+    import concurrent.futures
     from helpers import table
 
 

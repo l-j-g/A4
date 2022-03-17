@@ -46,8 +46,18 @@ def search_db(group, order, page, filters=None, limit=25):
         'ScanIndexForward': orderDict[order],
         'Limit': limit
     }
+
+    filterDict = {
+    }
+
     if page != 1:
         queryDict['ExclusiveStartKey'] = session['pageKey'][f'{int(page)-1}']
+    '''
+    if filters:
+        for filter in filter:
+
+        queryDict['KeyConditionExpression'].append( & Key(filter).{})
+    '''
     return table.query(**queryDict)
 
 def get_time():
