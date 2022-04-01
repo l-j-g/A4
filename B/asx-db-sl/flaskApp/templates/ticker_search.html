@@ -152,11 +152,11 @@
             {% for group, title in headers.items() %}
                 {% if group == session.group and session.order == "dsc" %}
                     <th>
-                        <a href="/search/groupBy={{ group }}&orderBy=asc">{{ title }} [ ⬇ ]</a>
+                        <a href="/search/groupBy={{ group }}&orderBy=asc">{{ title }} [⬇]</a>
                     </th>
                 {% elif group == session.group and session.order == "asc" %}
                     <th>
-                        <a href="/search/groupBy={{ group }}&orderBy=dsc">{{ title }} [ ⬆ ]</a>
+                        <a href="/search/groupBy={{ group }}&orderBy=dsc">{{ title }} [⬆]</a>
                     </th>
                 {% else %}
                     <th>

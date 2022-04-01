@@ -31,10 +31,11 @@ def handle_500(e):
 def handle_403(e):
     return "Error 403: Forbidden", 403
 
+'''
 @app.route('/favicon.ico')
 def favicon():
     return send_from_directory(os.path.join(app.root_path, 'static'), 'favicon.ico', mimetype='image/vnd.microsoft.icon')
-
+'''
 if development: 
     import os
     import boto3
