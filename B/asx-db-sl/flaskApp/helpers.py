@@ -89,7 +89,7 @@ def get_table(data):
     ]   
     table = df.style.set_properties(**{'max-width': '500px', 'font-size': '10pt', 'text-align': 'right'}) \
         .highlight_null(null_color='red') \
-        .set_table_attributes('class="table table-hover table-striped table-border w-auto"') \
+        .set_table_attributes('class="table table-hover table-striped table-border table-responsive w-auto"') \
         .set_table_styles(custom_styles, overwrite=True) \
         .format('${0:,.0f}') \
         .to_html()

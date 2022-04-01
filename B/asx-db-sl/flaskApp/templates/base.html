@@ -8,8 +8,6 @@
               crossorigin="anonymous">
         <meta name="viewport"
               content="width=device-width, initial-scale=1, shrink-to-fit=no">
-        <link rel="shortcut icon"
-              href="{{ url_for('static', filename='favicon.ico') }}">
         <link rel="stylesheet"
               href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.8.1/font/bootstrap-icons.css">
     </head>
@@ -26,7 +24,7 @@
         ('/search', 'search', 'Tickers'),
         ] -%}
         {% set active_page = active_page|default('home') -%}
-        <div class="collapse navbar-collapse" id="navbarsExample07XL">
+        <div class="collapse navbar-collapse show" id="navbarsExample07XL">
             <ul class="navbar-nav me-auto mb-2 mb-lg-0">
                 {% for href, id, caption in navigation_bar %}
                     <li class="nav-item">
@@ -47,10 +45,10 @@
     </div>
 </nav>
 <body class="bg-dark">
-    <div class="px-2 py-2 bg-dark text-white">
-        <div class="d-flex flex-wrap align-items-center justify-content-center justify-content-lg-start">
-            <div class="container-xl">
-                <div class="px-2 py-2 bg-light text-black">
+    <div class="px-2 py-2 bg-dark text-white table-responsive">
+        <div class="d-flex flex-wrap align-items-center justify-content-center justify-content-lg-start table-responsive">
+            <div class="container-xl table-responsive">
+                <div class="px-2 py-2 bg-light text-black table-responsive">
                     {% block content %}
                     {% endblock content %}
                     <footer class="p-2 mb-2 bg-dark text-light">

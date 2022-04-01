@@ -13,8 +13,8 @@ def view_info(ticker=None):
     if request.method == 'POST':
         ticker = request.form['ticker']
     try: # Try to get the ticker from the database
-        response = get_item(ticker)
         ticker = ticker.upper()
+        response = get_item(ticker)
         # Translate data from db to titles
         headers = {
                 "sector": "Sector:", 
